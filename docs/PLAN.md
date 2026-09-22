@@ -8,11 +8,19 @@ Phased roadmap. Docs-first repo; software follows.
 - [x] Lock preferred HR: **Polar Verity Sense** (arm)
 - [x] Recommend RGB: **Blackfly S BFS-U3-23S3C-C** (~$421 body)
 - [x] Budget gaze approach: face RGB + MediaPipe/OpenFace + painting-plane intersection
-- [ ] Investigator: define quantum vs standard stimulus protocol
+- [x] Protocol outline drafted (`docs/PROTOCOL.md`) — **WIP**; trial flow, provisional timing, measures, event markers, operator checklist
+- [ ] Investigator: operational definition of **quantum** vs **standard** paintings (not invented in the protocol draft)
+- [ ] Investigator remaining decisions (see `docs/PROTOCOL.md` §13), including:
+  - Stimulus set size and catalog
+  - Physical canvas vs screen
+  - Exact fixation / exposure / ISI durations (draft defaults: 2.5 / 25 / 8 s)
+  - Ratings / behavioral responses (whether, which, when)
+  - Per-painting AOIs; HR/thermal baseline windows
+  - Sample size, eligibility, confirmatory vs exploratory hypotheses
 - [ ] Order RGB camera + C-mount lens; confirm Verity Sense kit
 - [ ] Confirm IRB / data-retention constraints for face/thermal video
 
-**Exit:** Design + plan merged; shopping list agreed; protocol outline drafted.
+**Exit:** Design + plan merged; shopping list agreed; protocol outline drafted (WIP). Investigator decisions in `docs/PROTOCOL.md` §13 still block a confirmatory run.
 
 ## Phase 1 — Repo scaffolding (MVP skeleton)
 
@@ -65,7 +73,7 @@ Phased roadmap. Docs-first repo; software follows.
 
 1. Merge this design/plan to `main`
 2. Finalize shopping: Blackfly S + lens + Verity Sense
-3. Draft stimulus protocol appendix (`docs/PROTOCOL.md`) — even a one-page WIP
+3. Investigator: close `docs/PROTOCOL.md` §13 decisions (definition, catalog, timing, ratings)
 4. Scaffold Python package + LSL stubs (Phase 1)
 5. Bring up Verity BLE worker (no camera required)
 
