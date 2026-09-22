@@ -132,6 +132,10 @@ Hardware locked or preferred in [HARDWARE.md](HARDWARE.md) and [DESIGN.md](DESIG
 
 For a **70 cm × 90 cm** painting (from prior hardware notes):
 
+![Sample lab layout](figures/lab-layout.png)
+
+Figure: provisional lab geometry (70×90 cm painting, ≈1.5 m viewing distance, RGB + PI 450i co-mount ≈0.8–1.0 m from the face, Verity Sense on the arm). Verify distances in the actual room before data collection.
+
 | Parameter | Baseline | Notes |
 |-----------|----------|--------|
 | Painting size (example) | 70 × 90 cm | Scale visual-angle notes if size changes. |

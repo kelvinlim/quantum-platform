@@ -1,5 +1,7 @@
 # Hardware
 
+Provisional room placement (painting, cameras, subject) is shown in [lab-layout.png](figures/lab-layout.png).
+
 ## Owned
 
 | Item | Notes |

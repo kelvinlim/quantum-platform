@@ -16,7 +16,7 @@ This repository holds design docs and the build plan first; capture software fol
 - [Design](docs/DESIGN.md) — architecture, modalities, sync, data model
 - [Plan](docs/PLAN.md) — phased implementation roadmap
 - [Hardware](docs/HARDWARE.md) — recommended and owned devices
-- [Protocol](docs/PROTOCOL.md) — investigator-facing study protocol (Draft / WIP)
+- [Protocol](docs/PROTOCOL.md) — investigator-facing study protocol (Draft / WIP); [lab-layout figure](docs/figures/lab-layout.png) (provisional geometry)
 
 ## Status
 
