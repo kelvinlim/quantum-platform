@@ -14,7 +14,7 @@ Primary research contrast (investigator-defined; not yet finalized in this repo)
 |--------|--------|---------------|------|
 | Facial IR / perfusion | Optris PI 450i (owned) | 80 Hz (or 27 Hz) | Skin-temperature ROIs (nasal tip/alar, nostrils, inner canthi, periorbita, forehead) |
 | Facial RGB / expression | Teledyne FLIR Blackfly S BFS-U3-23S3C-C (recommended) | 60–120 Hz | Landmarks, FACS/AUs, blinks, micro-motion, iris for budget gaze |
-| Heart rate / PPG | Polar Verity Sense (arm-worn) | BLE PPG | Heart rate and pulse timing (not ECG R-peaks) |
+| Heart rate / PPG | Polar Verity Sense (upper arm) | BLE PPG | Heart rate and pulse timing (not ECG R-peaks); keep clear of chair arms |
 | Gaze on painting | Derived from RGB + geometry | same as RGB | Coarse AOIs on canvas (center / L/R / U/D) |
 | Events / stimulus | Software controller | event markers | Painting onset/offset, fixation, ISI, NUC triggers, responses |
 | Optional audio | Mic | as needed | Later; latency must be characterized separately |
@@ -27,13 +27,14 @@ Primary research contrast (investigator-defined; not yet finalized in this repo)
 
 ## 3. Viewing geometry (baseline)
 
-For a **70 cm × 90 cm** painting (from prior hardware notes):
+For a **70 cm × 90 cm** painting (from prior hardware notes). Subject is **seated** in a comfortable, **fixed / locked chair** (not standing); see [PROTOCOL.md](PROTOCOL.md) §2.4 and §4.1.
 
-- Subject-to-painting ≈ **1.5 m** (~26° × 33° visual angle)
+- Subject-to-painting ≈ **1.5 m** (~26° × 33° visual angle); chair locked / marked on the floor
+- Seat height adjusted so **eye height ≈ painting center (≈145–150 cm)**
 - RGB camera-to-face ≈ **0.8–1.0 m** (face fills ~30–50% of FOV)
-- Painting center height ≈ **145–150 cm**
 - RGB pedestal ≈ **95–105 cm**, tilted up ~12–15°
 - Dual-mount RGB + PI 450i on a rigid rail/PETG frame so RGB↔thermal calibration stays stable
+- Chin rest not required unless gaze calibration fails
 
 ## 4. Architecture
 

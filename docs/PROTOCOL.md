@@ -65,10 +65,11 @@ Confirmatory vs exploratory status for each hypothesis is **TBD**.
 
 ### 2.4 Seating and posture
 
-- Seated, facing the painting plane. Feet on the floor; back supported.
-- Head approximately upright; talking and large gestures discouraged during trials.
-- Viewing distance marked on the floor (see §4). A chin rest is **not** required for MVP; optional if motion proves excessive (**TBD**).
-- Same seated height across participants so painting center remains near eye height (~145–150 cm).
+- Subject sits **upright in a comfortable chair with back support**; feet flat on the floor or on a footrest.
+- Chair is **locked / marked on the floor** so viewing distance stays ≈1.5 m (see §4).
+- Seat height adjusted so **eye height ≈ painting center (≈145–150 cm)**.
+- During exposures: face the painting; minimize talking and large head turns. A chin rest is **not** required unless gaze calibration fails.
+- Polar Verity Sense on the **upper arm**, clear of chair arms.
 
 ---
 
@@ -134,18 +135,20 @@ For a **70 cm × 90 cm** painting (from prior hardware notes):
 
 ![Sample lab layout](figures/lab-layout.png)
 
-Figure: provisional lab geometry (70×90 cm painting, ≈1.5 m viewing distance, RGB + PI 450i co-mount ≈0.8–1.0 m from the face, Verity Sense on the arm). Verify distances in the actual room before data collection.
+Figure: seated / fixed-chair lab geometry (provisional; verify in room). Subject sits in a locked chair at ≈1.5 m; seat height set so eye height ≈ painting center (≈145–150 cm). 70×90 cm painting, RGB + PI 450i co-mount ≈0.8–1.0 m from the face, Verity Sense on the upper arm (clear of chair arms).
 
 | Parameter | Baseline | Notes |
 |-----------|----------|--------|
 | Painting size (example) | 70 × 90 cm | Scale visual-angle notes if size changes. |
-| Subject-to-painting | ≈ 1.5 m | ~26° × 33° visual angle at the example size. |
+| Posture | Seated, fixed chair | Comfortable chair with back support; feet flat or on a footrest. Not standing. |
+| Subject-to-painting | ≈ 1.5 m | Chair locked / marked on the floor so this distance stays fixed. ~26° × 33° visual angle at the example size. |
 | RGB camera-to-face | ≈ 0.8–1.0 m | Face fills ~30–50% of FOV. |
-| Painting center height | ≈ 145–150 cm | Near seated eye height. |
+| Painting center height | ≈ 145–150 cm | Seat height adjusted so **eye height ≈ painting center**. |
 | RGB pedestal height | ≈ 95–105 cm | Tilted up ~12–15°. |
 | Thermal + RGB mount | Rigid rail / PETG dual bay | Preserve RGB↔thermal calibration. |
+| Chin rest | Not required | Add only if gaze look-at calibration fails. |
 
-Mark floor position and camera pedestal; photograph the setup once per study site.
+Mark the locked chair position (floor marks) and camera pedestal; photograph the setup once per study site. Confirm chair marks and eye-height alignment before each session.
 
 If paintings are not 70 × 90 cm, keep subject-to-painting at 1.5 m unless the investigator rescales for a target visual angle (**TBD**).
 
@@ -163,7 +166,7 @@ If paintings are not 70 × 90 cm, keep subject-to-painting at 1.5 m unless the i
 |--------|--------|-------------------|
 | Facial IR | Optris PI 450i (owned) | Co-mounted with RGB; face fills thermal FOV. Manual NUC preferred. Target 80 Hz (or 27 Hz if required). |
 | Facial RGB | Teledyne FLIR Blackfly S BFS-U3-23S3C-C (recommended; not yet purchased) | Same rigid mount; 60–120 Hz. C-mount lens ~6–8 mm so face is 30–50% of frame at 0.8–1.0 m. |
-| HR / PPG | Polar Verity Sense (preferred) | **Arm-worn**, same arm for the whole session. See §9.3. PPG, not ECG R-peaks. |
+| HR / PPG | Polar Verity Sense (preferred) | **Upper arm**, same arm for the whole session, clear of chair arms. See §9.3. PPG, not ECG R-peaks. |
 | Gaze | Derived from face RGB + painting-plane intersection | No dedicated eye tracker in MVP. Coarse AOIs only. |
 | Sync | LSL + monotonic timestamps | Timestamp on arrival in each capture thread. |
 
@@ -178,9 +181,9 @@ Provisional wall-clock total ≈ **45–70 min** for the default 16-trial set, i
 | Phase | Content | Provisional duration |
 |-------|---------|----------------------|
 | 1. Arrival | ID code assigned (not a name in filenames). Consent. Eligibility check. | 5–10 min |
-| 2. Sensors | Seat at the floor mark. Verity on the designated arm. Confirm RGB + thermal FOV and face framing. | 5–10 min |
-| 3. Calibration | RGB–thermal target; gaze look-at marks on the painting plane; brief Verity signal check. | 5–10 min |
-| 4. Instructions | View naturally; keep still; no talking during trials. Explain fixation → painting → pause. | 2–3 min |
+| 2. Sensors | Seat in the locked chair at the floor marks; confirm eye height ≈ painting center. Verity on the designated **upper arm**, clear of chair arms. Confirm RGB + thermal FOV and face framing. | 5–10 min |
+| 3. Calibration | RGB–thermal target; gaze look-at marks on the painting plane; brief Verity signal check. Chin rest only if look-at calibration fails. | 5–10 min |
+| 4. Instructions | Sit upright, face the painting; minimize talking and large head turns during trials. Explain fixation → painting → pause. | 2–3 min |
 | 5. Practice | 1–2 practice trials, full trial structure, no experimental items. | ~2 min |
 | 6. Experimental blocks | 16 exposures (provisional) with optional mid-session break. | ~10–15 min without ratings; longer if ratings added |
 | 7. Debrief | Remove sensors. Questions. Optional familiarity / strategy notes. | 5–10 min |
@@ -212,7 +215,7 @@ Provisional 16-trial experimental block: ≈ **9.5 min** plus any break.
 ### 6.1 What the participant sees
 
 1. **Fixation.** A single central mark on a covered easel, blank board, or blank display at the painting-plane center.
-2. **Exposure.** Cover removed or stimulus displayed. Participant views freely.
+2. **Exposure.** Cover removed or stimulus displayed. Participant faces the painting and views freely, minimizing talking and large head turns.
 3. **ISI.** Cover replaced or display blanked. If ratings are on, the rating UI appears here; otherwise rest.
 
 ### 6.2 What the operator / controller does
@@ -320,8 +323,8 @@ Marks must be removable or outside the artwork so they do not remain during expo
 
 ### 9.3 Verity Sense
 
-- Fit on the **same arm** for the entire session (provisional default: **non-dominant** arm, unless that arm cannot obtain a stable signal).
-- Place per Polar guidance (typically forearm; record clock position / distance from elbow in `meta.yaml`).
+- Fit on the **same upper arm** for the entire session (provisional default: **non-dominant** arm, unless that arm cannot obtain a stable signal).
+- Place on the **upper arm**, clear of chair arms so the optical window is not occluded when the participant sits. Record clock position / distance from the elbow in `meta.yaml`.
 - Skin clean and dry; band snug, not painful.
 - Confirm live HR/PPG in the host UI before practice.
 - Do not relocate the band between practice and experimental trials.
@@ -336,7 +339,8 @@ Use as a run sheet. NUC policy is non-negotiable for usable thermal data.
 ### 10.1 Before the participant arrives
 
 - [ ] Room lights stable; HVAC not blowing on the seat.
-- [ ] Floor mark at 1.5 m; painting center 145–150 cm; cameras framed for a seated face.
+- [ ] Chair locked / marked on the floor at ≈1.5 m; painting center 145–150 cm; cameras framed for a seated face.
+- [ ] Confirm chair marks and eye-height alignment (seat height set so eye height ≈ painting center) before the session.
 - [ ] PI 450i powered and thermally settled; **manual NUC** mode if supported.
 - [ ] RGB + thermal co-mount tight; calibration target ready.
 - [ ] Verity charged; same unit as other sessions if possible.
@@ -346,11 +350,12 @@ Use as a run sheet. NUC policy is non-negotiable for usable thermal data.
 ### 10.2 Per participant
 
 - [ ] Consent complete; study code only in filenames.
-- [ ] Seat on the mark; posture check.
-- [ ] Verity on the **same designated arm**; signal live.
+- [ ] Seat in the locked chair on the floor marks; upright, back supported, feet flat or on a footrest.
+- [ ] Confirm chair marks and eye-height alignment (eye height ≈ painting center) before starting.
+- [ ] Verity on the **same designated upper arm**, clear of chair arms; signal live.
 - [ ] RGB–thermal calibration saved.
 - [ ] Gaze 5–9-point look-at completed.
-- [ ] Practice trials run; participant understands fixation → view → pause.
+- [ ] Practice trials run; participant understands sit facing the painting, minimize talking and large head turns, fixation → view → pause.
 - [ ] Recording armed (`session_start`).
 
 ### 10.3 During trials (critical)
@@ -386,7 +391,7 @@ sessions/<participant_id>/<session_id>/
   derived/          # optional
 ```
 
-`meta.yaml` should include at least: protocol version (`0.1`), participant code, operator, geometry notes, Verity arm, presentation medium, stimulus order, and any deviations.
+`meta.yaml` should include at least: protocol version (`0.1`), participant code, operator, geometry notes (chair marks, seat height / eye-height alignment), Verity arm, presentation medium, stimulus order, and any deviations.
 
 ### 11.1 Required event markers
 
@@ -437,7 +442,7 @@ Items the investigator still needs to lock before a confirmatory run. The draft 
 | 7 | Whether behavioral ratings are collected, which scales, when | **TBD** — optional, ISI only |
 | 8 | Per-painting AOIs beyond coarse center / L/R / U/D | **TBD** |
 | 9 | Baseline windows for HR and thermal contrasts | **TBD** |
-| 10 | Sample size, inclusion/exclusion, chin rest, caffeine/exercise rules | **TBD** |
+| 10 | Sample size, inclusion/exclusion, caffeine/exercise rules | **TBD**. Chin rest: not required unless gaze calibration fails (see §2.4). |
 | 11 | IRB / consent language; video retention; encryption; withdrawal | **TBD** |
 | 12 | Quantitative gaze-calibration error bound | **TBD** |
 | 13 | Hypotheses confirmatory vs exploratory; primary endpoint | **TBD** |

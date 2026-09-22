@@ -1,6 +1,6 @@
 # Hardware
 
-Provisional room placement (painting, cameras, subject) is shown in [lab-layout.png](figures/lab-layout.png).
+Provisional room placement (painting, cameras, **seated** subject in a **fixed chair**) is shown in [lab-layout.png](figures/lab-layout.png). Verify chair marks and eye-height alignment in the actual room.
 
 ## Owned
 
@@ -14,7 +14,7 @@ Provisional room placement (painting, cameras, subject) is shown in [lab-layout.
 |------|------|-------|
 | Teledyne FLIR Blackfly S **BFS-U3-23S3C-C** | Facial RGB | Sony IMX392, global shutter, up to ~163 fps, USB3, Spinnaker/PySpin. ~**$421** body (Teledyne / Edmund). Lead time often ≤ 4 weeks. |
 | C-mount lens ~6–8 mm | RGB FOV | Match sensor class; face 30–50% of frame at 0.8–1.0 m. Edmund Optics / Computar. |
-| Polar **Verity Sense** | Arm PPG / HR | Preferred over H10 chest strap for painting viewing comfort. |
+| Polar **Verity Sense** | Upper-arm PPG / HR | Preferred over H10 chest strap for seated viewing comfort; place on the upper arm, clear of chair arms. |
 | Rigid dual mount | RGB + PI 450i | Aluminum rail / Arca-Swiss / PETG dual bay; maintain calibration. |
 | Dual-spectrum cal target | RGB–thermal | Heated aluminum/mask ~35–40 °C preferred; halogen-lit glossy checkerboard as quick alt. |
 
