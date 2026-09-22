@@ -67,7 +67,7 @@ Confirmatory vs exploratory status for each hypothesis is **TBD**.
 
 - Seated, facing the painting plane. Feet on the floor; back supported.
 - Head approximately upright; talking and large gestures discouraged during trials.
-- Viewing distance marked on the floor (see §5). A chin rest is **not** required for MVP; optional if motion proves excessive (**TBD**).
+- Viewing distance marked on the floor (see §4). A chin rest is **not** required for MVP; optional if motion proves excessive (**TBD**).
 - Same seated height across participants so painting center remains near eye height (~145–150 cm).
 
 ---
@@ -93,7 +93,7 @@ Until those exist, only dry-run / hardware sessions should be run.
 
 | Option | Notes |
 |--------|--------|
-| Physical canvas (preferred for ecological viewing, if available) | Fixed easel / wall plane; cover or swap only during ISI. Geometry in §5 assumes a 70 × 90 cm example. |
+| Physical canvas (preferred for ecological viewing, if available) | Fixed easel / wall plane; cover or swap only during ISI. Geometry in §4 assumes a 70 × 90 cm example. |
 | Screen reproduction | Calibrated display at the same painting-plane distance and visual angle. Color/luminance characterization **TBD**. |
 
 Do not mix physical and screen items inside one participant’s experimental blocks unless the investigator explicitly designs that factor.
@@ -120,7 +120,7 @@ Each item in the catalog should carry:
 - `condition`: `quantum` \| `standard` \| `practice`
 - width × height (cm) or display visual angle
 - presentation: `physical` \| `screen`
-- optional notes for AOIs (see §9.2)
+- optional notes for AOIs (see §8.2)
 
 ---
 
@@ -159,7 +159,7 @@ If paintings are not 70 × 90 cm, keep subject-to-painting at 1.5 m unless the i
 |--------|--------|-------------------|
 | Facial IR | Optris PI 450i (owned) | Co-mounted with RGB; face fills thermal FOV. Manual NUC preferred. Target 80 Hz (or 27 Hz if required). |
 | Facial RGB | Teledyne FLIR Blackfly S BFS-U3-23S3C-C (recommended; not yet purchased) | Same rigid mount; 60–120 Hz. C-mount lens ~6–8 mm so face is 30–50% of frame at 0.8–1.0 m. |
-| HR / PPG | Polar Verity Sense (preferred) | **Arm-worn**, same arm for the whole session. See §10.3. PPG, not ECG R-peaks. |
+| HR / PPG | Polar Verity Sense (preferred) | **Arm-worn**, same arm for the whole session. See §9.3. PPG, not ECG R-peaks. |
 | Gaze | Derived from face RGB + painting-plane intersection | No dedicated eye tracker in MVP. Coarse AOIs only. |
 | Sync | LSL + monotonic timestamps | Timestamp on arrival in each capture thread. |
 
@@ -200,7 +200,7 @@ Each experimental trial is:
 | Fixation | **2.5 s** | 2–3 s | Central mark. Canvas covered, blank plane, or uniform screen. No NUC unless the controller treats fixation as a non-exposure window; prefer NUC in ISI. |
 | Painting exposure | **25 s** | 20–30 s | Painting visible. **Never** trigger PI 450i NUC/shutter. No talking, no operator motion in FOV. |
 | ISI | **8 s** | 5–10 s | Canvas covered or blank. **NUC/shutter here** (and only here, plus pre-block). Optional rating if enabled. |
-| Optional rating | **TBD** (if used: ~8–15 s inside or after ISI) | — | See §9.3. Do not steal time from exposure. |
+| Optional rating | **TBD** (if used: ~8–15 s inside or after ISI) | — | See §8.3. Do not steal time from exposure. |
 
 Provisional trial length without ratings: **2.5 + 25 + 8 = 35.5 s**.  
 Provisional 16-trial experimental block: ≈ **9.5 min** plus any break.
@@ -213,7 +213,7 @@ Provisional 16-trial experimental block: ≈ **9.5 min** plus any break.
 
 ### 6.2 What the operator / controller does
 
-- Emit the event markers in §12 at each epoch boundary.
+- Emit the event markers in §11 at each epoch boundary.
 - Arm a **single** manual NUC at ISI onset (or a fixed offset into ISI, e.g. 0.5 s), never during exposure.
 - Swap physical paintings only during ISI (or during a longer inter-block gap).
 
@@ -273,7 +273,7 @@ MVP gaze is **coarse** (a few degrees / centimeters on canvas).
 
 > **TBD — per-painting AOIs.** Content-specific regions (faces, high-contrast loci, “quantum” motifs, etc.) are not defined here. If used, they belong in the stimulus catalog and must remain coarse enough for software gaze.
 
-Per-session look-at calibration (5–9 marks) is required before experimental trials (§10.2).
+Per-session look-at calibration (5–9 marks) is required before experimental trials (§9.2).
 
 ### 8.3 Optional behavioral ratings
 
@@ -289,7 +289,7 @@ If the investigator adds ratings, collect them in ISI or immediately after ISI, 
 | Interest | Not interesting — very interesting |
 | Familiarity | Never seen — know well |
 
-Log as optional response events with `painting_id` and condition (see §12).
+Log as optional response events with `painting_id` and condition (see §11).
 
 ---
 
