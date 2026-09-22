@@ -16,7 +16,8 @@ This repository holds design docs and the build plan first; capture software fol
 - [Design](docs/DESIGN.md) — architecture, modalities, sync, data model
 - [Plan](docs/PLAN.md) — phased implementation roadmap
 - [Hardware](docs/HARDWARE.md) — recommended and owned devices
+- [Protocol](docs/PROTOCOL.md) — investigator-facing study protocol (Draft / WIP)
 
 ## Status
 
-Early design. Painting “quantum vs standard” stimulus protocol is still to be defined by the investigators.
+Early design. A working protocol outline lives in [`docs/PROTOCOL.md`](docs/PROTOCOL.md). The operational definition of “quantum” vs “standard” paintings, and the other investigator decisions listed there, are still open.
