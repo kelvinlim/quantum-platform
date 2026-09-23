@@ -224,7 +224,7 @@ redcap:
     session_id: session_id
 
 box:
-  root_folder_id: "0"       # QuantumPlatform folder ID
+  root_folder_id: "<QuantumPlatform folder ID>"
   # or: root_folder_path: /QuantumPlatform
   # auth: oauth | jwt — as required by the later Box connector
 ```
