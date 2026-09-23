@@ -5,9 +5,9 @@
 | Document | `docs/ARCHITECTURE.md` |
 | Status | **Decision locked** |
 | Date | 2026-09-23 |
-| Related | [DESIGN.md](DESIGN.md), [PLAN.md](PLAN.md), [HARDWARE.md](HARDWARE.md), [PROTOCOL.md](PROTOCOL.md) |
+| Related | [DESIGN.md](DESIGN.md), [PLAN.md](PLAN.md), [HARDWARE.md](HARDWARE.md), [PROTOCOL.md](PROTOCOL.md), [INTEGRATIONS.md](INTEGRATIONS.md) |
 
-This document records the **desktop shell** decision and the alternatives that were compared. Capture modalities, sync, session layout, and event names stay in [DESIGN.md](DESIGN.md). Trial flow stays in [PROTOCOL.md](PROTOCOL.md).
+This document records the **desktop shell** decision and the alternatives that were compared. Capture modalities, sync, session layout, and event names stay in [DESIGN.md](DESIGN.md). Trial flow stays in [PROTOCOL.md](PROTOCOL.md). Sidecar IPC, packaging, REDCap fields, and Box paths: [INTEGRATIONS.md](INTEGRATIONS.md).
 
 ---
 
@@ -96,7 +96,7 @@ sessions/<participant_id>/<session_id>/     ← local write is source of truth
   streams/{thermal,rgb,verity,gaze}/
   derived/                                  ← optional
         │
-        └── async Box upload (same tree or mapped taxonomy)
+        └── async Box upload (same relative tree; see INTEGRATIONS.md)
 ```
 
 ---
@@ -122,7 +122,7 @@ sessions/<participant_id>/<session_id>/     ← local write is source of truth
 
 ### 4.3 Python capture sidecar
 
-Long-lived process bundled with the app (dev: interpreter; release: packaged binary — packaging strategy is an open follow-up).
+Long-lived process bundled with the app (dev: interpreter; release: **PyInstaller onedir** as Tauri `externalBin` — [INTEGRATIONS.md](INTEGRATIONS.md) §3).
 
 | Worker | Responsibility |
 |--------|----------------|
@@ -159,6 +159,8 @@ REDCap is the study registry:
 - Optional ratings or CRF fields if the investigator enables them.
 - Links (`participant_id`, `session_id`) that point at the Box path — not the bytes.
 
+The app-facing field dictionary (`participants` + repeating `sessions`) is locked in [INTEGRATIONS.md](INTEGRATIONS.md) §4.
+
 Do **not** PUT RGB, thermal, or other blobs into REDCap. File fields there do not replace the session directory.
 
 ### Box — blobs after local write
@@ -167,7 +169,7 @@ Box is durable object storage for completed sessions:
 
 1. Write locally (`meta.yaml`, `events.jsonl`, streams, calibration).
 2. Verify integrity (checksums in a later hardening phase).
-3. Upload asynchronously to a Box folder taxonomy (open follow-up).
+3. Upload asynchronously, mirroring `sessions/<participant_id>/<session_id>/` under the Box study root ([INTEGRATIONS.md](INTEGRATIONS.md) §5).
 4. Recording continues or completes even if upload is deferred.
 
 Local disk remains the source of truth until upload is confirmed.
@@ -194,7 +196,7 @@ Same pattern as audio-compare: webview UI, thin Rust host, bundled sidecar. Here
 
 - Two runtimes to package, sign, and debug (Rust host + Python sidecar).
 - IPC and process supervision are extra moving parts vs a single Python GUI.
-- Python packaging (PyInstaller vs venv vs conda) is still an open follow-up.
+- Two artifacts to ship: Rust host plus a PyInstaller onedir sidecar (vendor SDKs may still need a host install).
 
 **Best when**
 
@@ -296,15 +298,15 @@ Phase 1 should scaffold this split, not a Python-only CLI that would have to be 
 
 ---
 
-## 8. Open follow-ups (not blocking)
+## 8. Locked follow-ups
 
-These do not reopen the A vs B–E decision.
+These do not reopen the A vs B–E decision. Locked 23 September 2026. Full contracts: [INTEGRATIONS.md](INTEGRATIONS.md).
 
-| Topic | Note |
-|-------|------|
-| **IPC: JSON-RPC vs gRPC** | Sidecar command/event protocol is undecided. JSON-RPC over stdio or localhost is enough for start/stop/status; gRPC (or Optris OTC-style) only if we need typed high-rate control. Pick at Phase 1 spike; either fits A. |
-| **Python packaging** | Dev: venv + `python -m quantum_platform`. Release: PyInstaller / PyOxidizer / conda-pack as a Tauri sidecar. Decide when the first hardware worker lands. |
-| **REDCap project fields** | Instrument list, repeating session form, and which IDs map to `participant_id` / `session_id` are investigator + REDCap-admin work. |
-| **Box folder taxonomy** | Mirror `sessions/<participant_id>/<session_id>/` vs study / site / date prefixes. Needed before the first real upload, not before scaffolding. |
+| Topic | Decision | Pointer |
+|-------|----------|---------|
+| **Sidecar IPC** | JSON-RPC 2.0, newline-delimited JSON on the Python sidecar stdin/stdout | Methods: `session.start`, `session.stop`, `doctor.run`, `calibrate.gaze`, `status.get`. Notifications: `event.emit`, `device.status`, `error`. gRPC not chosen for MVP. [INTEGRATIONS.md](INTEGRATIONS.md) §2 |
+| **Python packaging** | Dev: Python 3.11+ venv (or uv) + editable install (`python -m quantum_platform` / `qp`). Release: **PyInstaller onedir** as Tauri `externalBin` | Prefer onedir over onefile. PyOxidizer / conda-pack are fallbacks only. Vendor SDKs (Spinnaker, Optris) may still need host installers. [INTEGRATIONS.md](INTEGRATIONS.md) §3 |
+| **REDCap project fields** | App contract: `participants` (classic) + `sessions` (repeating) | `record_id` is `participant_id`. No RGB/thermal file fields. Ratings CRFs optional later. [INTEGRATIONS.md](INTEGRATIONS.md) §4 |
+| **Box folder taxonomy** | Mirror local `sessions/<participant_id>/<session_id>/` under a study root | Upload after local write. Multi-site prefixes deferred. Config: `box.root_folder_id`. [INTEGRATIONS.md](INTEGRATIONS.md) §5 |
 
 Investigator protocol items (quantum vs standard definition, catalog, timing) remain in [PROTOCOL.md](PROTOCOL.md) §13 and are independent of the shell.

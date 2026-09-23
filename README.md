@@ -14,6 +14,7 @@ This repository holds design docs and the build plan first; capture software fol
 ## Docs
 
 - [Architecture](docs/ARCHITECTURE.md) — desktop shell decision (**Option A**: Tauri 2 + React + Rust + Python sidecar) and alternatives B–E
+- [Integrations](docs/INTEGRATIONS.md) — sidecar IPC (JSON-RPC 2.0 stdio), Python packaging, REDCap field contract, Box folder taxonomy
 - [Design](docs/DESIGN.md) — modalities, sync, data model
 - [Plan](docs/PLAN.md) — phased implementation roadmap
 - [Hardware](docs/HARDWARE.md) — recommended and owned devices
@@ -21,4 +22,4 @@ This repository holds design docs and the build plan first; capture software fol
 
 ## Status
 
-Early design. Desktop shell is locked: **Option A** (Tauri 2 + React + Rust + Python sidecar) — see [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md). A working protocol outline lives in [`docs/PROTOCOL.md`](docs/PROTOCOL.md). The operational definition of “quantum” vs “standard” paintings, and the other investigator decisions listed there, are still open.
+Early design. Desktop shell is locked: **Option A** (Tauri 2 + React + Rust + Python sidecar) — see [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md). Sidecar IPC, packaging, REDCap fields, and Box paths are locked in [`docs/INTEGRATIONS.md`](docs/INTEGRATIONS.md). A working protocol outline lives in [`docs/PROTOCOL.md`](docs/PROTOCOL.md). The operational definition of “quantum” vs “standard” paintings, and the other investigator decisions listed there, are still open.
