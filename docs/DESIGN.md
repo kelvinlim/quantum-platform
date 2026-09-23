@@ -38,6 +38,8 @@ For a **70 cm × 90 cm** painting (from prior hardware notes). Subject is **seat
 
 ## 4. Architecture
 
+Desktop shell (locked Sep 2026): **Tauri 2 + React + Rust orchestrator + Python capture sidecar** — **Option A**. Decision, diagram, REDCap/Box roles, and alternatives B–E: [ARCHITECTURE.md](ARCHITECTURE.md).
+
 Central **host application** with **one capture worker per modality**, plus a **stimulus / event controller**.
 
 ```
@@ -96,7 +98,7 @@ Expect **coarse AOIs** (a few degrees / centimeters on canvas), not fine brushst
 
 | Layer | Choice |
 |-------|--------|
-| Language | Python 3.11+ for MVP workers; C++/Qt later if needed for Optris path |
+| Language | Python 3.11+ sidecar workers; desktop shell is Tauri/React/Rust ([ARCHITECTURE.md](ARCHITECTURE.md)). C++ later only if the Optris path requires it |
 | Thermal SDK | Optris OTC (gRPC) and/or classic `libirimager` / PIX Connect IPC |
 | RGB SDK | Spinnaker / PySpin |
 | Vision | OpenCV, MediaPipe (or OpenFace) |

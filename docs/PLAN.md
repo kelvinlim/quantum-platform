@@ -9,6 +9,7 @@ Phased roadmap. Docs-first repo; software follows.
 - [x] Recommend RGB: **Blackfly S BFS-U3-23S3C-C** (~$421 body)
 - [x] Budget gaze approach: face RGB + MediaPipe/OpenFace + painting-plane intersection
 - [x] Protocol outline drafted (`docs/PROTOCOL.md`) — **WIP**; trial flow, provisional timing, measures, event markers, operator checklist
+- [x] Lock desktop shell: **Option A** — Tauri 2 + React + Rust shell + Python capture sidecar ([ARCHITECTURE.md](ARCHITECTURE.md), Sep 2026). Alternatives B–E documented, not chosen.
 - [ ] Investigator: operational definition of **quantum** vs **standard** paintings (not invented in the protocol draft)
 - [ ] Investigator remaining decisions (see `docs/PROTOCOL.md` §13), including:
   - Stimulus set size and catalog
@@ -24,14 +25,18 @@ Phased roadmap. Docs-first repo; software follows.
 
 ## Phase 1 — Repo scaffolding (MVP skeleton)
 
-- Python package layout (`src/quantum_platform/`)
+**Assume Option A** ([ARCHITECTURE.md](ARCHITECTURE.md)): Tauri 2 + React operator UI, Rust session orchestrator, Python capture sidecar. Do not scaffold a Python-only GUI or Electron host.
+
+- Tauri 2 + React operator shell (session start/stop, participant code, device status)
+- Rust orchestrator stubs: sidecar spawn/lifecycle, session directory, command/event relay
+- Python sidecar package (`src/quantum_platform/` or equivalent)
 - Config schemas for hardware profiles and session metadata
 - LSL stream name conventions + `events.jsonl` writer
-- Stub workers: `thermal`, `rgb`, `verity`, `gaze`, `stimulus` (simulate clocks if hardware absent)
-- CLI: `qp session start|stop`, `qp calibrate gaze`, `qp doctor` (device presence checks)
+- Stub workers in the sidecar: `thermal`, `rgb`, `verity`, `gaze`, `stimulus` (simulate clocks if hardware absent)
+- Sidecar CLI still useful for lab bring-up: `qp session start|stop`, `qp calibrate gaze`, `qp doctor` (device presence checks)
 - Unit tests for timestamp pairing and event log format
 
-**Exit:** Dry-run session produces aligned fake streams + markers on disk.
+**Exit:** Dry-run session from the Tauri UI (or sidecar CLI) produces aligned fake streams + markers on disk.
 
 ## Phase 2 — Hardware bring-up
 
@@ -74,7 +79,7 @@ Phased roadmap. Docs-first repo; software follows.
 1. Merge this design/plan to `main`
 2. Finalize shopping: Blackfly S + lens + Verity Sense
 3. Investigator: close `docs/PROTOCOL.md` §13 decisions (definition, catalog, timing, ratings)
-4. Scaffold Python package + LSL stubs (Phase 1)
+4. Scaffold Tauri 2 + React + Rust shell + Python sidecar stubs (Phase 1)
 5. Bring up Verity BLE worker (no camera required)
 
 ## Success criteria (study-ready)
