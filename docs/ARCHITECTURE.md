@@ -5,9 +5,9 @@
 | Document | `docs/ARCHITECTURE.md` |
 | Status | **Decision locked** |
 | Date | 2026-09-23 |
-| Related | [DESIGN.md](DESIGN.md), [PLAN.md](PLAN.md), [HARDWARE.md](HARDWARE.md), [PROTOCOL.md](PROTOCOL.md), [INTEGRATIONS.md](INTEGRATIONS.md) |
+| Related | [DESIGN.md](DESIGN.md), [PLAN.md](PLAN.md), [HARDWARE.md](HARDWARE.md), [PROTOCOL.md](PROTOCOL.md), [INTEGRATIONS.md](INTEGRATIONS.md), [EXPERIMENT_CONFIG.md](EXPERIMENT_CONFIG.md) |
 
-This document records the **desktop shell** decision and the alternatives that were compared. Capture modalities, sync, session layout, and event names stay in [DESIGN.md](DESIGN.md). Trial flow stays in [PROTOCOL.md](PROTOCOL.md). Sidecar IPC, packaging, REDCap fields, and Box paths: [INTEGRATIONS.md](INTEGRATIONS.md).
+This document records the **desktop shell** decision and the alternatives that were compared. Capture modalities, sync, session layout, and event names stay in [DESIGN.md](DESIGN.md). Trial flow stays in [PROTOCOL.md](PROTOCOL.md). Machine-readable stages, collect flags, and operator reminders: [EXPERIMENT_CONFIG.md](EXPERIMENT_CONFIG.md). Sidecar IPC, packaging, REDCap fields, and Box paths: [INTEGRATIONS.md](INTEGRATIONS.md).
 
 ---
 
@@ -35,7 +35,7 @@ Build a **local-first** operator desktop app for a seated painting-viewing proto
 | Facial RGB / expression / iris | Recommended **Teledyne FLIR Blackfly S** (Spinnaker / PySpin) |
 | Heart rate / PPG | **Polar Verity Sense** (upper-arm BLE) |
 | Gaze on the painting plane | Budget software gaze from face RGB (MediaPipe / OpenFace + geometry) |
-| Events / stimulus | Software controller (fixation → exposure → ISI, NUC policy) |
+| Events / stimulus | Software controller driven by experiment config (fixation → exposure → ISI, NUC policy) — [EXPERIMENT_CONFIG.md](EXPERIMENT_CONFIG.md) |
 
 ### Study operations
 
@@ -106,6 +106,7 @@ sessions/<participant_id>/<session_id>/     ← local write is source of truth
 ### 4.1 Tauri 2 + React operator UI
 
 - Session arm / stop, participant code entry, calibration wizards, device status.
+- **Guided runbook** driven by the loaded experiment config ([EXPERIMENT_CONFIG.md](EXPERIMENT_CONFIG.md)): current stage, countdown, reminders, constraint badges, checklist gates. Not a hard-coded trial loop.
 - Live previews and QC indicators (dropouts, BLE state, NUC-safe window).
 - Operator checklist surfaces (NUC never during exposure).
 - No direct USB/BLE/SDK calls. Talks to the Rust shell via Tauri IPC.
@@ -130,7 +131,7 @@ Long-lived process bundled with the app (dev: interpreter; release: **PyInstalle
 | `rgb` | Spinnaker / PySpin; monotonic timestamps on arrival |
 | `verity` | Polar BLE GATT; hardware + receive timestamps |
 | `gaze` | MediaPipe (or OpenFace) on RGB; painting-plane intersection; `GazePainting` LSL |
-| `stimulus` | Trial state machine; event markers; “no NUC during stimulus” |
+| `stimulus` | Executes stages from the experiment config ([EXPERIMENT_CONFIG.md](EXPERIMENT_CONFIG.md)); event markers; “no NUC during stimulus” |
 
 Sidecar isolation: a worker or interpreter fault can be restarted without tearing down the operator window.
 
@@ -310,3 +311,5 @@ These do not reopen the A vs B–E decision. Locked 23 September 2026. Full cont
 | **Box folder taxonomy** | Mirror local `sessions/<participant_id>/<session_id>/` under a study root | Upload after local write. Multi-site prefixes deferred. Config: `box.root_folder_id`. [INTEGRATIONS.md](INTEGRATIONS.md) §5 |
 
 Investigator protocol items (quantum vs standard definition, catalog, timing) remain in [PROTOCOL.md](PROTOCOL.md) §13 and are independent of the shell.
+
+Experiment stage files, operator reminders, and collect flags are specified in [EXPERIMENT_CONFIG.md](EXPERIMENT_CONFIG.md). That sketch does not reopen Option A or the locks in this table.

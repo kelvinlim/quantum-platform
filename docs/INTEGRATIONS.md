@@ -5,9 +5,9 @@
 | Document | `docs/INTEGRATIONS.md` |
 | Status | **Contracts locked** |
 | Date | 2026-09-23 |
-| Related | [ARCHITECTURE.md](ARCHITECTURE.md), [DESIGN.md](DESIGN.md), [PLAN.md](PLAN.md) |
+| Related | [ARCHITECTURE.md](ARCHITECTURE.md), [DESIGN.md](DESIGN.md), [PLAN.md](PLAN.md), [EXPERIMENT_CONFIG.md](EXPERIMENT_CONFIG.md) |
 
-This document is the app-facing contract for sidecar IPC, Python packaging, REDCap registry fields, and Box session paths. It locks the four follow-ups in [ARCHITECTURE.md](ARCHITECTURE.md) §8. It does **not** reopen Option A (Tauri 2 + React + Rust + Python sidecar).
+This document is the app-facing contract for sidecar IPC, Python packaging, REDCap registry fields, and Box session paths. It locks the four follow-ups in [ARCHITECTURE.md](ARCHITECTURE.md) §8. It does **not** reopen Option A (Tauri 2 + React + Rust + Python sidecar). Experiment stage schema lives in [EXPERIMENT_CONFIG.md](EXPERIMENT_CONFIG.md) and does **not** change the locks below.
 
 No software is implemented here. Phase 1 scaffolding in [PLAN.md](PLAN.md) should assume these contracts.
 
@@ -52,7 +52,7 @@ The same JSON-RPC over `127.0.0.1` TCP, for debugging without Tauri. Not require
 
 | Method | Kind | Purpose |
 |--------|------|---------|
-| `session.start` | request | Arm a session: participant / session IDs, create the local tree, start workers |
+| `session.start` | request | Arm a session: participant / session IDs, create the local tree, start workers. Params include `experiment_id` **or** `experiment_path` (see below). |
 | `session.stop` | request | Stop capture, flush writers, mark local complete |
 | `doctor.run` | request | Device presence / SDK / PATH checks |
 | `calibrate.gaze` | request | Start or record gaze look-at calibration |
@@ -73,8 +73,19 @@ Each line is one JSON-RPC 2.0 object.
 Request (orchestrator → sidecar):
 
 ```json
-{"jsonrpc":"2.0","id":1,"method":"session.start","params":{"participant_id":"P001","session_id":"S001"}}
+{"jsonrpc":"2.0","id":1,"method":"session.start","params":{"participant_id":"P001","session_id":"S001","experiment_id":"painting_session_simplified"}}
 ```
+
+`session.start` params (additive; method list and transport stay locked):
+
+| Param | Required | Notes |
+|-------|----------|--------|
+| `participant_id` | yes | Study code |
+| `session_id` | yes | Visit id |
+| `experiment_id` | one of these | Catalog id (`experiments/<id>.yaml` under `experiments.dir`) |
+| `experiment_path` | one of these | Explicit path to a YAML/JSON experiment file ([EXPERIMENT_CONFIG.md](EXPERIMENT_CONFIG.md)) |
+
+Provide **`experiment_id` or `experiment_path`**, not both. The sidecar loads that file, validates `schema_version`, and the stimulus worker plus operator UI share the resolved plan. Missing both may be allowed only for `doctor` / hardware bring-up sessions that are not a protocol run.
 
 Response:
 
@@ -227,6 +238,11 @@ box:
   root_folder_id: "<QuantumPlatform folder ID>"
   # or: root_folder_path: /QuantumPlatform
   # auth: oauth | jwt — as required by the later Box connector
+
+# optional — experiment catalog ([EXPERIMENT_CONFIG.md](EXPERIMENT_CONFIG.md))
+experiments:
+  dir: experiments/                 # repo- or config-relative YAML catalog
+  # default_id: painting_session_simplified
 ```
 
 Secrets (API tokens, Box credentials) stay in environment variables or the OS secret store, not in committed YAML.
@@ -237,6 +253,7 @@ Secrets (API tokens, Box credentials) stay in environment variables or the OS se
 
 - Option A vs B–E (already locked in [ARCHITECTURE.md](ARCHITECTURE.md)).
 - Investigator protocol items ([PROTOCOL.md](PROTOCOL.md) §13).
+- Experiment stage schema, reminder text, and block/randomization hooks ([EXPERIMENT_CONFIG.md](EXPERIMENT_CONFIG.md)). Adding `experiment_id` / `experiment_path` on `session.start` and optional `experiments.*` does **not** reopen IPC transport, packaging, REDCap fields, or Box taxonomy.
 - Exact JSON-RPC param schemas (tighten at Phase 1 stubs).
 - Live REDCap project creation or field-map onto an existing project.
 - Box auth flavor (OAuth vs JWT) and the concrete connector implementation.

@@ -11,6 +11,7 @@ Phased roadmap. Docs-first repo; software follows.
 - [x] Protocol outline drafted (`docs/PROTOCOL.md`) — **WIP**; trial flow, provisional timing, measures, event markers, operator checklist
 - [x] Lock desktop shell: **Option A** — Tauri 2 + React + Rust shell + Python capture sidecar ([ARCHITECTURE.md](ARCHITECTURE.md), Sep 2026). Alternatives B–E documented, not chosen.
 - [x] Lock architecture follow-ups: JSON-RPC 2.0 stdio, PyInstaller onedir (release), REDCap/Box contracts ([INTEGRATIONS.md](INTEGRATIONS.md), Sep 2026)
+- [x] Experiment configurator design: declarative stages, collect flags, operator reminders ([EXPERIMENT_CONFIG.md](EXPERIMENT_CONFIG.md), Sep 2026)
 - [ ] Investigator: operational definition of **quantum** vs **standard** paintings (not invented in the protocol draft)
 - [ ] Investigator remaining decisions (see `docs/PROTOCOL.md` §13), including:
   - Stimulus set size and catalog
@@ -34,13 +35,14 @@ Phased roadmap. Docs-first repo; software follows.
 - Rust orchestrator stubs: sidecar spawn/lifecycle, **JSON-RPC 2.0 NDJSON over stdio**, session directory, command/event relay
 - Python sidecar package (`src/quantum_platform/` or equivalent); run as `python -m quantum_platform` or `qp`
 - Config schemas for hardware profiles, session metadata, and `redcap.*` / `box.*` / `sidecar.*` keys ([INTEGRATIONS.md](INTEGRATIONS.md) §6)
+- **Experiment configurator** ([EXPERIMENT_CONFIG.md](EXPERIMENT_CONFIG.md)): `schema_version: 1` YAML schema + loader/validator; operator **stage UI** (stage list, banner, countdown, reminders, constraint badges, checklist gates); sidecar `stimulus` worker consumes the **same YAML**. Dry-run fake streams still follow the configured stages.
 - LSL stream name conventions + `events.jsonl` writer
 - Stub workers in the sidecar: `thermal`, `rgb`, `verity`, `gaze`, `stimulus` (simulate clocks if hardware absent)
 - Sidecar CLI still useful for lab bring-up: `qp session start|stop`, `qp calibrate gaze`, `qp doctor` (device presence checks)
 - Unit tests for timestamp pairing and event log format
 - REDCap/Box network clients are not required to function in Phase 1; when stubs exist, use the INTEGRATIONS.md contracts
 
-**Exit:** Dry-run session from the Tauri UI (or sidecar CLI) produces aligned fake streams + markers on disk.
+**Exit:** Dry-run session from the Tauri UI (or sidecar CLI) follows the experiment config stages and produces aligned fake streams + markers on disk.
 
 ## Phase 2 — Hardware bring-up
 
@@ -54,10 +56,10 @@ Phased roadmap. Docs-first repo; software follows.
 
 ## Phase 3 — Stimulus controller
 
-- Painting trial state machine: fixation → stimulus → ISI → …
-- Condition tags: `quantum` | `standard` (and painting IDs)
-- Optional on-screen instructions / rating scales if protocol requires
-- Enforce “no NUC during stimulus”
+- **Config-driven** stages from the experiment YAML ([EXPERIMENT_CONFIG.md](EXPERIMENT_CONFIG.md)); do not hard-code fixation → stimulus → ISI
+- Condition tags: `quantum` | `standard` (and painting IDs) as opaque labels from the catalog / config
+- Optional on-screen instructions / rating scales if protocol requires (REDCap ratings stay in REDCap; reminders may point there)
+- Enforce “no NUC during stimulus” from stage `constraints`
 
 **Exit:** Pilot with 1–2 colleagues; timing logs reviewed.
 

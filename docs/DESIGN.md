@@ -38,9 +38,9 @@ For a **70 cm × 90 cm** painting (from prior hardware notes). Subject is **seat
 
 ## 4. Architecture
 
-Desktop shell (locked Sep 2026): **Tauri 2 + React + Rust orchestrator + Python capture sidecar** — **Option A**. Decision, diagram, REDCap/Box roles, and alternatives B–E: [ARCHITECTURE.md](ARCHITECTURE.md).
+Desktop shell (locked Sep 2026): **Tauri 2 + React + Rust orchestrator + Python capture sidecar** — **Option A**. Decision, diagram, REDCap/Box roles, and alternatives B–E: [ARCHITECTURE.md](ARCHITECTURE.md). Operator UI and the stimulus worker share one experiment config: [EXPERIMENT_CONFIG.md](EXPERIMENT_CONFIG.md).
 
-Central **host application** with **one capture worker per modality**, plus a **stimulus / event controller**.
+Central **host application** with **one capture worker per modality**, plus a **stimulus / event controller** that executes **config-driven stages** ([EXPERIMENT_CONFIG.md](EXPERIMENT_CONFIG.md)) rather than a hard-coded trial loop.
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -104,7 +104,7 @@ Expect **coarse AOIs** (a few degrees / centimeters on canvas), not fine brushst
 | Vision | OpenCV, MediaPipe (or OpenFace) |
 | HR | Polar BLE (GATT); keep hardware timestamps + receive timestamps |
 | Sync | pylsl / LSL |
-| Config | YAML/JSON session + hardware profiles |
+| Config | YAML/JSON session + hardware profiles; experiment stages in `experiments/<name>.yaml` ([EXPERIMENT_CONFIG.md](EXPERIMENT_CONFIG.md)) |
 | Storage | Per-session directory: raw streams or chunked recordings, `events.jsonl`, `meta.yaml`, calibration artifacts |
 
 ### Suggested session layout
@@ -135,6 +135,8 @@ Markers must include at least:
 - `isi_onset` / `isi_offset`
 - `nuc_trigger`
 - optional behavioral responses / ratings
+
+Stage enter/exit in the experiment config ([EXPERIMENT_CONFIG.md](EXPERIMENT_CONFIG.md) §4.11) **maps onto these names**. The stimulus worker emits them from the loaded YAML; do not keep a second, hard-coded marker list in the trial loop.
 
 ## 7. Open investigator decisions
 
