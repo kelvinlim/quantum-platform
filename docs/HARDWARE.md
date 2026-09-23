@@ -6,13 +6,13 @@ Provisional room placement (painting, cameras, **seated** subject in a **fixed c
 
 | Item | Notes |
 |------|-------|
-| Optris PI 450i | 382×288 LWIR, ~80 Hz, USB 2.0; facial IR only (no RGB). Prefer manual NUC between stimuli. |
+| Optris PI 450i | 382×288 LWIR, ~80 Hz, USB 2.0; facial IR only (no RGB). Prefer manual NUC between stimuli. SDK: **OTC** (Windows / Linux only; **no official macOS**). See [SDK.md](SDK.md). |
 
 ## Recommended to purchase
 
 | Item | Role | Notes |
 |------|------|-------|
-| Teledyne FLIR Blackfly S **BFS-U3-23S3C-C** | Facial RGB | Sony IMX392, global shutter, up to ~163 fps, USB3, Spinnaker/PySpin. ~**$421** body (Teledyne / Edmund). Lead time often ≤ 4 weeks. |
+| Teledyne FLIR Blackfly S **BFS-U3-23S3C-C** | Facial RGB | Sony IMX392, global shutter, up to ~163 fps, USB3, Spinnaker/PySpin (Windows / macOS / Linux). ~**$421** body (Teledyne / Edmund). Lead time often ≤ 4 weeks. SDK notes: [SDK.md](SDK.md). |
 | C-mount lens ~6–8 mm | RGB FOV | Match sensor class; face 30–50% of frame at 0.8–1.0 m. Edmund Optics / Computar. |
 | Polar **Verity Sense** | Upper-arm PPG / HR | Preferred over H10 chest strap for seated viewing comfort; place on the upper arm, clear of chair arms. |
 | Rigid dual mount | RGB + PI 450i | Aluminum rail / Arca-Swiss / PETG dual bay; maintain calibration. |

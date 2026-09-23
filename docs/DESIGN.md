@@ -99,8 +99,8 @@ Expect **coarse AOIs** (a few degrees / centimeters on canvas), not fine brushst
 | Layer | Choice |
 |-------|--------|
 | Language | Python 3.11+ sidecar workers; desktop shell is Tauri/React/Rust ([ARCHITECTURE.md](ARCHITECTURE.md)). C++ later only if the Optris path requires it |
-| Thermal SDK | Optris OTC (gRPC) and/or classic `libirimager` / PIX Connect IPC |
-| RGB SDK | Spinnaker / PySpin |
+| Thermal SDK | Optris **OTC** preferred (Windows / Linux only; no official macOS); legacy `libirimager` as fallback — [SDK.md](SDK.md) |
+| RGB SDK | Spinnaker / PySpin (Windows / macOS / Linux) — [SDK.md](SDK.md) |
 | Vision | OpenCV, MediaPipe (or OpenFace) |
 | HR | Polar BLE (GATT); keep hardware timestamps + receive timestamps |
 | Sync | pylsl / LSL |
