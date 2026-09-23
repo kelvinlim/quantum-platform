@@ -122,6 +122,8 @@ sessions/<participant_id>/<session_id>/
   derived/   # optional online or offline features
 ```
 
+REDCap registry fields and Box upload paths: [INTEGRATIONS.md](INTEGRATIONS.md) (same relative tree as local `sessions/<participant_id>/<session_id>/`).
+
 ## 6. Event model (minimum)
 
 Markers must include at least:

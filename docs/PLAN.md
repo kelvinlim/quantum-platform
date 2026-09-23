@@ -10,6 +10,7 @@ Phased roadmap. Docs-first repo; software follows.
 - [x] Budget gaze approach: face RGB + MediaPipe/OpenFace + painting-plane intersection
 - [x] Protocol outline drafted (`docs/PROTOCOL.md`) — **WIP**; trial flow, provisional timing, measures, event markers, operator checklist
 - [x] Lock desktop shell: **Option A** — Tauri 2 + React + Rust shell + Python capture sidecar ([ARCHITECTURE.md](ARCHITECTURE.md), Sep 2026). Alternatives B–E documented, not chosen.
+- [x] Lock architecture follow-ups: JSON-RPC 2.0 stdio, PyInstaller onedir (release), REDCap/Box contracts ([INTEGRATIONS.md](INTEGRATIONS.md), Sep 2026)
 - [ ] Investigator: operational definition of **quantum** vs **standard** paintings (not invented in the protocol draft)
 - [ ] Investigator remaining decisions (see `docs/PROTOCOL.md` §13), including:
   - Stimulus set size and catalog
@@ -27,14 +28,17 @@ Phased roadmap. Docs-first repo; software follows.
 
 **Assume Option A** ([ARCHITECTURE.md](ARCHITECTURE.md)): Tauri 2 + React operator UI, Rust session orchestrator, Python capture sidecar. Do not scaffold a Python-only GUI or Electron host.
 
+**Assume locked integrations** ([INTEGRATIONS.md](INTEGRATIONS.md)): JSON-RPC 2.0 NDJSON over sidecar stdio; REDCap field dictionary and Box path taxonomy as specified there. Release packaging (**PyInstaller onedir** as Tauri `externalBin`) can wait until a hardware worker lands; Phase 1 runs the sidecar from a venv (`python -m quantum_platform` / `qp`).
+
 - Tauri 2 + React operator shell (session start/stop, participant code, device status)
-- Rust orchestrator stubs: sidecar spawn/lifecycle, session directory, command/event relay
-- Python sidecar package (`src/quantum_platform/` or equivalent)
-- Config schemas for hardware profiles and session metadata
+- Rust orchestrator stubs: sidecar spawn/lifecycle, **JSON-RPC 2.0 NDJSON over stdio**, session directory, command/event relay
+- Python sidecar package (`src/quantum_platform/` or equivalent); run as `python -m quantum_platform` or `qp`
+- Config schemas for hardware profiles, session metadata, and `redcap.*` / `box.*` / `sidecar.*` keys ([INTEGRATIONS.md](INTEGRATIONS.md) §6)
 - LSL stream name conventions + `events.jsonl` writer
 - Stub workers in the sidecar: `thermal`, `rgb`, `verity`, `gaze`, `stimulus` (simulate clocks if hardware absent)
 - Sidecar CLI still useful for lab bring-up: `qp session start|stop`, `qp calibrate gaze`, `qp doctor` (device presence checks)
 - Unit tests for timestamp pairing and event log format
+- REDCap/Box network clients are not required to function in Phase 1; when stubs exist, use the INTEGRATIONS.md contracts
 
 **Exit:** Dry-run session from the Tauri UI (or sidecar CLI) produces aligned fake streams + markers on disk.
 
