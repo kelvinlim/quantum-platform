@@ -5,7 +5,7 @@
 | Document | `docs/INTEGRATIONS.md` |
 | Status | **Contracts locked** |
 | Date | 2026-09-23 |
-| Related | [ARCHITECTURE.md](ARCHITECTURE.md), [DESIGN.md](DESIGN.md), [PLAN.md](PLAN.md), [EXPERIMENT_CONFIG.md](EXPERIMENT_CONFIG.md) |
+| Related | [ARCHITECTURE.md](ARCHITECTURE.md), [DESIGN.md](DESIGN.md), [PLAN.md](PLAN.md), [EXPERIMENT_CONFIG.md](EXPERIMENT_CONFIG.md), [SDK.md](SDK.md) |
 
 This document is the app-facing contract for sidecar IPC, Python packaging, REDCap registry fields, and Box session paths. It locks the four follow-ups in [ARCHITECTURE.md](ARCHITECTURE.md) §8. It does **not** reopen Option A (Tauri 2 + React + Rust + Python sidecar). Experiment stage schema lives in [EXPERIMENT_CONFIG.md](EXPERIMENT_CONFIG.md) and does **not** change the locks below.
 
@@ -134,6 +134,11 @@ Either may be a fallback if PyInstaller cannot ship a required native SDK.
 ### Vendor SDKs on the lab host
 
 Even with a bundled sidecar, **Spinnaker** and **Optris** (and similar vendor SDKs) may still need **separate installers and/or PATH** on the capture host. The sidecar binary does not replace those vendor runtimes for MVP.
+
+OS support, download links, Python imports, and the Mac thermal gap: [SDK.md](SDK.md) (researched 2026-09-23; vendor pages remain the source of truth).
+
+- **Optris OTC SDK** (PI 450i): Windows and Linux only. **No official macOS SDK.** Full thermal capture needs a Windows 11 or Ubuntu host.
+- **Spinnaker / PySpin** (Blackfly S): Windows, macOS, and Linux. Install the runtime first, then the **matching** `spinnaker_python` wheel from that SDK build.
 
 ---
 

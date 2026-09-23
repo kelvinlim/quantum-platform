@@ -5,9 +5,9 @@
 | Document | `docs/ARCHITECTURE.md` |
 | Status | **Decision locked** |
 | Date | 2026-09-23 |
-| Related | [DESIGN.md](DESIGN.md), [PLAN.md](PLAN.md), [HARDWARE.md](HARDWARE.md), [PROTOCOL.md](PROTOCOL.md), [INTEGRATIONS.md](INTEGRATIONS.md), [EXPERIMENT_CONFIG.md](EXPERIMENT_CONFIG.md) |
+| Related | [DESIGN.md](DESIGN.md), [PLAN.md](PLAN.md), [HARDWARE.md](HARDWARE.md), [PROTOCOL.md](PROTOCOL.md), [INTEGRATIONS.md](INTEGRATIONS.md), [EXPERIMENT_CONFIG.md](EXPERIMENT_CONFIG.md), [SDK.md](SDK.md) |
 
-This document records the **desktop shell** decision and the alternatives that were compared. Capture modalities, sync, session layout, and event names stay in [DESIGN.md](DESIGN.md). Trial flow stays in [PROTOCOL.md](PROTOCOL.md). Machine-readable stages, collect flags, and operator reminders: [EXPERIMENT_CONFIG.md](EXPERIMENT_CONFIG.md). Sidecar IPC, packaging, REDCap fields, and Box paths: [INTEGRATIONS.md](INTEGRATIONS.md).
+This document records the **desktop shell** decision and the alternatives that were compared. Capture modalities, sync, session layout, and event names stay in [DESIGN.md](DESIGN.md). Trial flow stays in [PROTOCOL.md](PROTOCOL.md). Machine-readable stages, collect flags, and operator reminders: [EXPERIMENT_CONFIG.md](EXPERIMENT_CONFIG.md). Sidecar IPC, packaging, REDCap fields, and Box paths: [INTEGRATIONS.md](INTEGRATIONS.md). Camera SDK OS support and host-install notes: [SDK.md](SDK.md).
 
 ---
 
@@ -53,6 +53,24 @@ Build a **local-first** operator desktop app for a seated painting-viewing proto
 - Putting raw video in REDCap
 - Requiring network during recording
 - Tobii-grade gaze or ECG-quality R-peaks (unchanged from DESIGN.md)
+
+### 2.1 Supported platforms
+
+Tauri 2 ships the operator UI on **Windows, macOS, and Linux** from one React + Rust codebase. The Python sidecar is built per OS. **Full thermal capture is Windows or Linux only** — Optris does not publish an official macOS OTC SDK. Vendor pages (researched 2026-09-23) are the source of truth; details and download links: [SDK.md](SDK.md).
+
+| Capability | Windows | macOS | Linux |
+|------------|---------|-------|-------|
+| Tauri operator UI + Rust shell | Yes | Yes | Yes (secondary) |
+| Python sidecar (orchestration, events, LSL writers) | Yes | Yes | Yes |
+| Blackfly S RGB (Spinnaker / PySpin) | Yes | Yes | Yes |
+| Polar Verity Sense (BLE) | Yes | Yes | Yes |
+| Software gaze (MediaPipe on RGB) | Yes | Yes | Yes |
+| Optris PI 450i thermal (OTC SDK) | Yes | **No official SDK** | Yes |
+| Full study capture (all modalities) | **Preferred lab host** | Partial (no thermal) | Full if Linux lab host |
+
+**Lab recommendation:** primary capture workstation = **Windows 11** (or Ubuntu) with OTC + Spinnaker installed on the host. Mac is OK for UI development, dry-runs without thermal, and RGB / BLE / gaze bring-up. A bundled sidecar does not replace those vendor runtimes ([INTEGRATIONS.md](INTEGRATIONS.md) §3).
+
+This matrix does **not** reopen Option A.
 
 ---
 
@@ -127,8 +145,8 @@ Long-lived process bundled with the app (dev: interpreter; release: **PyInstalle
 
 | Worker | Responsibility |
 |--------|----------------|
-| `thermal` | Optris OTC / `libirimager`; raw frames + °C; manual NUC only when the controller allows |
-| `rgb` | Spinnaker / PySpin; monotonic timestamps on arrival |
+| `thermal` | Optris OTC (preferred) / legacy `libirimager`; raw frames + °C; manual NUC only when the controller allows. **Windows / Linux host** — [SDK.md](SDK.md) |
+| `rgb` | Spinnaker / PySpin; monotonic timestamps on arrival. Windows / macOS / Linux — [SDK.md](SDK.md) |
 | `verity` | Polar BLE GATT; hardware + receive timestamps |
 | `gaze` | MediaPipe (or OpenFace) on RGB; painting-plane intersection; `GazePainting` LSL |
 | `stimulus` | Executes stages from the experiment config ([EXPERIMENT_CONFIG.md](EXPERIMENT_CONFIG.md)); event markers; “no NUC during stimulus” |
@@ -306,7 +324,7 @@ These do not reopen the A vs B–E decision. Locked 23 September 2026. Full cont
 | Topic | Decision | Pointer |
 |-------|----------|---------|
 | **Sidecar IPC** | JSON-RPC 2.0, newline-delimited JSON on the Python sidecar stdin/stdout | Methods: `session.start`, `session.stop`, `doctor.run`, `calibrate.gaze`, `status.get`. Notifications: `event.emit`, `device.status`, `error`. gRPC not chosen for MVP. [INTEGRATIONS.md](INTEGRATIONS.md) §2 |
-| **Python packaging** | Dev: Python 3.11+ venv (or uv) + editable install (`python -m quantum_platform` / `qp`). Release: **PyInstaller onedir** as Tauri `externalBin` | Prefer onedir over onefile. PyOxidizer / conda-pack are fallbacks only. Vendor SDKs (Spinnaker, Optris) may still need host installers. [INTEGRATIONS.md](INTEGRATIONS.md) §3 |
+| **Python packaging** | Dev: Python 3.11+ venv (or uv) + editable install (`python -m quantum_platform` / `qp`). Release: **PyInstaller onedir** as Tauri `externalBin` | Prefer onedir over onefile. PyOxidizer / conda-pack are fallbacks only. Vendor SDKs (Spinnaker, Optris) still need host installers. [INTEGRATIONS.md](INTEGRATIONS.md) §3, [SDK.md](SDK.md) |
 | **REDCap project fields** | App contract: `participants` (classic) + `sessions` (repeating) | `record_id` is `participant_id`. No RGB/thermal file fields. Ratings CRFs optional later. [INTEGRATIONS.md](INTEGRATIONS.md) §4 |
 | **Box folder taxonomy** | Mirror local `sessions/<participant_id>/<session_id>/` under a study root | Upload after local write. Multi-site prefixes deferred. Config: `box.root_folder_id`. [INTEGRATIONS.md](INTEGRATIONS.md) §5 |
 
