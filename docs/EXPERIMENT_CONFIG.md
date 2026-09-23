@@ -20,6 +20,7 @@ Kelvin wants an experiment configurator that:
 - Specifies the **stages** of a session (setup → calibration → baseline → trials → closeout).
 - For each stage: **what should be collected**, and **for how long**.
 - Puts **on-screen reminders** in front of the experimenter (checklists, “do NUC now”, “do not talk”, “start painting”, Phase labels).
+- Lets a stage **require a button press** to continue to the next phase, or to **end the current phase**, so the experimenter — not only the timer — controls complicated transitions.
 - Helps prevent mistakes in complicated runs (NUC during exposure, talking during a trial, skipped calibration).
 - Fits Phase 1 scaffolding: the operator UI is **driven by config**, not a hard-coded fixation → exposure → ISI loop.
 
@@ -32,6 +33,7 @@ Kelvin wants an experiment configurator that:
 - **Declarative definition.** YAML preferred; JSON OK. Files live at `experiments/<name>.yaml` (or an equivalent catalog path).
 - **Single source of truth** for timing, modalities, operator prompts, and event markers.
 - **Guided operator UI:** current stage, countdown, next actions, enabled streams, and hard constraints (e.g. no NUC during exposure).
+- **Button-driven phase control.** A stage can require a press to go to the next phase, a press to end the current phase, or neither (timer-only). Checklist gates block the button until checked.
 - **Same config** consumed by the Python stimulus worker and the Tauri/React operator UI, via the Rust orchestrator and JSON-RPC ([INTEGRATIONS.md](INTEGRATIONS.md) §2).
 - **Versioned schema.** Every file declares `schema_version: 1`. Unknown versions fail validation.
 
@@ -80,6 +82,7 @@ Session-wide fallbacks. A stage may override.
 | `sample_rates` | Hints only (`thermal_hz`, `rgb_hz`). Hardware profiles still win if they cannot meet the hint. |
 | `geometry` | Reference to the PROTOCOL / HARDWARE baseline (or a named geometry profile later). Not a second geometry spec. |
 | `advance` | Default advance policy if a stage omits it. |
+| `end_signal` | Default end-of-phase policy (`auto` unless a stage sets `operator` / `confirm_end`). |
 | `constraints` | Default hard constraints (e.g. `allow_nuc: true` outside exposure). |
 
 ### 4.3 `stages[]`
@@ -91,14 +94,50 @@ Ordered list. The run walks this list (after expanding blocks — §4.10). Each 
 | `id` | string | Stable within the file. Unique after block expansion if using `${repeat.index}` / `${item.painting_id}`. |
 | `label` | string | What the operator sees: `"Phase 1 — Baseline"`, `"Fixation"`, `"Exposure"`, `"ISI"`, `"Ratings"`. |
 | `kind` | enum | See §4.4. |
-| `duration_s` | number \| null | Wall-clock length. **`null`** if the operator advances manually. Required when `advance` is `auto`. |
-| `advance` | `auto` \| `operator` \| `either` | `auto`: timer (or worker) advances. `operator`: checklist / button. `either`: timer **or** operator (first wins; log which). |
+| `duration_s` | number \| null | Wall-clock length. **`null`** if the stage is open-ended. Required when `advance` is `auto` (timer must have something to count). When `advance` is `operator`, a duration is **guidance only** (countdown shown; it does not leave by itself). |
+| `advance` | `auto` \| `operator` \| `either` | Who may leave the stage — see §4.3.1. |
+| `end_signal` | `auto` \| `operator` | Optional. `operator` = explicit **End phase** click required before leave, even if a duration has elapsed. Alias: `confirm_end: true`. See §4.3.1. |
 | `collect` | map | Streams active this stage (§4.5). |
 | `stimulus` | object \| null | Optional painting / condition / presentation hints (§4.6). |
 | `constraints` | object | Hard constraints the UI badges and the sidecar enforces (§4.7). |
 | `reminders[]` | list | Operator-facing strings with `when` (§4.8). |
-| `checklist[]` | list | Required confirmations before advance when `advance` is `operator` or `either` (§4.9). |
-| `events` | object | Markers to emit on enter / exit (§4.11). |
+| `checklist[]` | list | Required confirmations. The primary **Continue / Next** or **End phase** button stays disabled until every item is checked (§4.9). |
+| `events` | object | Markers to emit on enter / exit (§4.11). Operator button presses also emit `operator_advance` / `operator_end_phase`. |
+
+### 4.3.1 Phase control (`advance` and `end_signal`)
+
+Two independent questions: **who may leave**, and **whether leaving still needs an explicit end click**.
+
+**`advance` — who may leave the stage**
+
+| `advance` | Meaning |
+|-----------|---------|
+| `auto` | Timer or sidecar condition advances **alone**. No operator press required. Hide or disable the primary phase button (Pause / Skip / Abort stay available). |
+| `operator` | Operator **must** press **Continue / Next phase**. A `duration_s` may still be shown as guidance; the timer does **not** leave the stage. Open-ended `operator_wait` / `stimulus` / `calibration` / `checklist` use this. |
+| `either` | Timer **may** auto-advance **or** the operator may press. First event wins; log which. Optional `either_policy`: `early` (press before the timer), `late` (press after the timer would have fired — treat as confirm), `both` (default). |
+
+**`end_signal` — explicit end-of-phase click**
+
+| `end_signal` | Meaning |
+|--------------|---------|
+| `auto` (default) | Leave as soon as the `advance` condition is met. No extra click. |
+| `operator` | Stage has (or may have) a duration, but still needs an explicit **End phase** click before leaving. The timer reaching zero does **not** dismiss the stage; it enables (or keeps enabling) the button. |
+
+`confirm_end: true` is an alias for `end_signal: operator`. `confirm_end: false` is `end_signal: auto`. Prefer `end_signal` in new files.
+
+Typical combinations:
+
+| Intent | `advance` | `duration_s` | `end_signal` | Primary button |
+|--------|-----------|--------------|--------------|----------------|
+| Fixed epoch (fixation, exposure) | `auto` | e.g. 25 | `auto` | none (timer leaves) |
+| Must click to go to the **next** phase | `operator` | `null` or guidance | `auto` | **Continue / Next phase** |
+| Timed, but must click **end of this phase** | `auto` | e.g. 60 | `operator` | **End phase** (enabled at t=0, or always enabled if `either_policy` allows early) |
+| Open-ended wait / hang painting / “Done” | `operator` | `null` | `auto` or `operator` | **Continue / Next** or **End phase** (one button; label from kind — see §5.2) |
+| Timer *or* operator | `either` | required | `auto` | **Continue / Next phase** (optional) |
+
+Do not set `advance: auto` with `duration_s: null` unless `end_signal` is `operator` (otherwise nothing can leave). Prefer `advance: operator` for open-ended stages.
+
+Button presses are first-class events (§4.11): `operator_advance` and `operator_end_phase`, with timestamps. They are in addition to the stage’s configured `events.exit`.
 
 ### 4.4 `kind` enum (v1 sketch)
 
@@ -111,7 +150,7 @@ Ordered list. The run walks this list (after expanding blocks — §4.10). Each 
 | `operator_wait` | “Hang the next painting”, mid-session break | `operator` |
 | `rest` | Baseline or recovery; collect without a stimulus | `auto` |
 
-`kind` is a **hint** for UI chrome and worker behavior (e.g. `stimulus` applies NUC defaults; `calibration` opens the look-at wizard). It does not replace `constraints`, `collect`, or `events`.
+`kind` is a **hint** for UI chrome and worker behavior (e.g. `stimulus` applies NUC defaults; `calibration` opens the look-at wizard). It does not replace `constraints`, `collect`, `events`, or the **Continue / End phase** button policy in §4.3.1. An open-ended `stimulus` that ends only when the experimenter presses Done uses `advance: operator` (and `duration_s: null`).
 
 ### 4.5 `collect`
 
@@ -190,7 +229,7 @@ checklist:
     text: Next painting hung (or cover on for fixation)
 ```
 
-The Advance control stays disabled until every item is checked. Checks are logged (operator, timestamp, stage id).
+The primary **Continue / Next phase** or **End phase** button stays **disabled until every item is checked**. Checks are logged (operator, timestamp, stage id). Skip / abort are separate controls and still require a reason.
 
 ### 4.10 Loops / blocks
 
@@ -248,6 +287,10 @@ events:
 | Exposure | `stimulus_onset` / `stimulus_offset` (+ `painting_id`, `condition`) |
 | ISI | `isi_onset` / `isi_offset` |
 | NUC (reminder + sidecar action) | `nuc_trigger` — only when `constraints.allow_nuc` is true |
+| Operator **Continue / Next phase** | `operator_advance` — timestamp, `stage_id`, optional `label` |
+| Operator **End phase** | `operator_end_phase` — timestamp, `stage_id`, optional `label` |
+
+`operator_advance` / `operator_end_phase` fire when the primary button is pressed (in addition to the stage’s configured enter/exit names). They are optional extensions of [DESIGN.md](DESIGN.md) §6 (same family as abort / note).
 
 Unknown `name` values fail validation unless listed in an `events.extra` allow-list (keep empty in v1). Optional ratings / abort notes stay as in DESIGN.md.
 
@@ -271,12 +314,26 @@ The Tauri/React UI is a **guided runbook** over the loaded experiment. It does n
 |---------|----------|
 | Stage list + progress | Full session outline; current stage highlighted; “Trial *k* / *N*” for blocks. |
 | Current-stage banner | Large `label` (Phase / Fixation / Exposure / ISI). |
-| Countdown | Remaining `duration_s` when timed; “waiting on operator” when not. |
+| Countdown | Remaining `duration_s` when set (guidance or hard timer). “Waiting on operator” when `advance: operator` and `duration_s` is null. |
+| Phase-control button | Large primary control — see below. |
 | Reminders | Live stack by `when` (`enter` on stage start, `countdown_at_s` when remaining hits `at_s`, `exit` on leave). |
 | Constraint badges | Persistent while the stage is active. Example: red **NO NUC**, **DO NOT TALK**. |
-| Checklist gates | Advance disabled until all items confirmed. |
+| Checklist gates | **Continue / Next** and **End phase** stay disabled until all items confirmed. |
 | Device status strip | Unchanged from ARCHITECTURE.md §4.1 (dropouts, BLE, NUC-safe window). Always visible. |
 | Enabled streams | Icons / chips from `collect` (thermal / RGB / Verity / gaze). |
+
+**Primary phase button (MVP).** One large control; label depends on the pending action (two visible buttons are OK if clearer, but not required):
+
+| Pending action | Button label | Logged event |
+|----------------|--------------|--------------|
+| `advance: operator` (and `end_signal` is not `operator`) | **Continue / Next phase** | `operator_advance` |
+| `end_signal: operator` (timed confirm, or Done on an open-ended wait) | **End phase** | `operator_end_phase` |
+| `advance: either` | **Continue / Next phase** | `operator_advance` if pressed; if the timer wins, no button event |
+| `advance: auto` and `end_signal: auto` | Hidden or disabled | none |
+
+Presses include a host timestamp and `stage_id`. The sidecar then emits the configured `events.exit` and walks to the next stage.
+
+Checklist items still **block** this button. Keyboard shortcut (e.g. Space / Enter) is **optional later**; the on-screen button is the v1 affordance. Do not bind a silent hotkey in Phase 1.
 
 ### 5.3 Abort / pause / skip
 
@@ -290,7 +347,7 @@ All three are **logged** (reason required for skip and abort).
 
 ### 5.4 Dry-run
 
-Dry-run mode (fake clocks, no hardware) **follows the same config**: same stages, durations, reminders, checklists, constraints, and markers. Streams are simulated ([PLAN.md](PLAN.md) Phase 1). Constraint badges still show; NUC is a no-op that still logs `nuc_trigger` only when allowed.
+Dry-run mode (fake clocks, no hardware) **follows the same config**: same stages, durations, reminders, checklists, constraints, **Continue / Next** and **End phase** buttons, and markers. Streams are simulated ([PLAN.md](PLAN.md) Phase 1). Constraint badges still show; NUC is a no-op that still logs `nuc_trigger` only when allowed. Button presses still emit `operator_advance` / `operator_end_phase`.
 
 ---
 
@@ -309,8 +366,8 @@ experiments/<name>.yaml
 ```
 
 - **One file, two consumers.** Do not keep a second “UI-only” trial list.
-- The sidecar is authoritative for **when** a timed stage ends.
-- The UI is authoritative for **checklist / operator advance** (sends an advance RPC; exact method name can wait for Phase 1 stubs — do not add a locked INTEGRATIONS method in this sketch).
+- The sidecar is authoritative for **when** a timed `advance: auto` stage ends (and `end_signal` is `auto`).
+- The UI is authoritative for **checklist gates**, **Continue / Next phase**, and **End phase** (sends an advance / end-phase RPC; exact method names can wait for Phase 1 stubs — do not add a locked INTEGRATIONS method in this sketch).
 - Stage progress can ride on existing `event.emit` notifications. A later `stage.status` notification is optional and is **not** required to lock IPC again.
 
 Copy the source YAML (and the resolved expansion) into the session tree next to `meta.yaml`.
@@ -327,8 +384,9 @@ id: painting_session_simplified
 name: Simplified painting session
 protocol_version: "0.1"
 description: >
-  Setup checklist, gaze calibration, baseline rest, then a small
-  fixation → exposure → ISI block. Not a confirmatory protocol.
+  Setup checklist (Continue / Next), gaze calibration, baseline rest
+  with End-phase confirmation, hang-painting wait (button), then a
+  small fixation → exposure → ISI block. Not a confirmatory protocol.
 
 defaults:
   collect:
@@ -371,7 +429,7 @@ stages:
       events: true
     reminders:
       - when: enter
-        text: "Complete setup before arming capture."
+        text: "Complete setup, then press Continue / Next phase."
         tone: info
     checklist:
       - id: chair_locked
@@ -411,6 +469,8 @@ stages:
     kind: rest
     duration_s: 60
     advance: auto
+    end_signal: operator          # timer is guidance/elapsed; must click End phase
+    # confirm_end: true           # alias for end_signal: operator
     collect:
       thermal: true
       rgb: true
@@ -427,10 +487,34 @@ stages:
         tone: warn
       - when: countdown_at_s
         at_s: 10
-        text: "10 s left — prepare fixation cover."
+        text: "10 s left — then press End phase (do not leave on the timer alone)."
     events:
       enter: { name: rest_onset, payload: { kind: baseline } }
       exit: { name: rest_offset, payload: { kind: baseline } }
+
+  - id: hang_painting
+    label: "Hang next painting"
+    kind: operator_wait
+    duration_s: null
+    advance: operator            # must press Continue / Next phase
+    collect:
+      thermal: true
+      rgb: true
+      verity: true
+      gaze: false
+      events: true
+    constraints:
+      allow_nuc: true
+      allow_talk: true
+      allow_operator_in_fov: true
+    reminders:
+      - when: enter
+        text: "Hang the first experimental painting. Cover on. Then press Continue / Next phase."
+    checklist:
+      - id: painting_hung
+        text: Painting hung; cover on for fixation
+    events:
+      enter: { name: session_note, payload: { note: hang_painting } }
 
   - id: experimental_block
     label: "Experimental trials"
@@ -523,7 +607,7 @@ stages:
       events: true
     reminders:
       - when: enter
-        text: "Capture should be stopped. Queue Box upload after local write."
+        text: "Capture should be stopped. Queue Box upload after local write. Press Continue / Next when the checklist is done."
     checklist:
       - id: events_paired
         text: events.jsonl has paired onset/offset for every exposure
@@ -543,13 +627,15 @@ stages:
 
 - `schema_version` must be `1`.
 - `id`, `name`, and a non-empty `stages` list are required.
-- Unknown `kind`, `advance`, `collect` keys, or `reminders.when` fail.
-- `advance: auto` requires numeric `duration_s` > 0.
+- Unknown `kind`, `advance`, `end_signal`, `collect` keys, or `reminders.when` fail.
+- `advance: auto` requires numeric `duration_s` > 0 **unless** `end_signal` is `operator` (open-ended confirm). Prefer `advance: operator` for open-ended stages.
+- `advance: operator` does **not** require `duration_s`; if present, treat as guidance only.
+- `confirm_end: true` normalizes to `end_signal: operator`.
 - `checklist` kind should use `advance: operator` (or `either`).
 - `constraints.allow_nuc: true` is rejected on `kind: stimulus` (hard fail).
-- `events.*.name` must be in the DESIGN.md §6 / PROTOCOL.md §11 set, or a documented optional name.
+- `events.*.name` must be in the DESIGN.md §6 / PROTOCOL.md §11 set, or a documented optional name (`operator_advance`, `operator_end_phase`, `rest_*`, `session_note`).
 - After block expansion, stage `id`s must be unique (allow `${repeat.index}` / `${item.painting_id}` in templates).
-- Dry-run uses the same validator.
+- Dry-run uses the same validator (including button-gated stages).
 
 ---
 

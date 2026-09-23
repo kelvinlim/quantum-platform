@@ -35,7 +35,7 @@ Phased roadmap. Docs-first repo; software follows.
 - Rust orchestrator stubs: sidecar spawn/lifecycle, **JSON-RPC 2.0 NDJSON over stdio**, session directory, command/event relay
 - Python sidecar package (`src/quantum_platform/` or equivalent); run as `python -m quantum_platform` or `qp`
 - Config schemas for hardware profiles, session metadata, and `redcap.*` / `box.*` / `sidecar.*` keys ([INTEGRATIONS.md](INTEGRATIONS.md) §6)
-- **Experiment configurator** ([EXPERIMENT_CONFIG.md](EXPERIMENT_CONFIG.md)): `schema_version: 1` YAML schema + loader/validator; operator **stage UI** (stage list, banner, countdown, reminders, constraint badges, checklist gates); sidecar `stimulus` worker consumes the **same YAML**. Dry-run fake streams still follow the configured stages.
+- **Experiment configurator** ([EXPERIMENT_CONFIG.md](EXPERIMENT_CONFIG.md)): `schema_version: 1` YAML schema + loader/validator; operator **stage UI** (stage list, banner, countdown, reminders, constraint badges, checklist gates, large **Continue / Next phase** and **End phase** buttons per `advance` / `end_signal`); sidecar `stimulus` worker consumes the **same YAML**. Button presses log `operator_advance` / `operator_end_phase`. Dry-run fake streams still follow the configured stages.
 - LSL stream name conventions + `events.jsonl` writer
 - Stub workers in the sidecar: `thermal`, `rgb`, `verity`, `gaze`, `stimulus` (simulate clocks if hardware absent)
 - Sidecar CLI still useful for lab bring-up: `qp session start|stop`, `qp calibrate gaze`, `qp doctor` (device presence checks)

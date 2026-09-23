@@ -135,6 +135,7 @@ Markers must include at least:
 - `isi_onset` / `isi_offset`
 - `nuc_trigger`
 - optional behavioral responses / ratings
+- optional operator phase control: `operator_advance` (Continue / Next phase), `operator_end_phase` (End phase) — [EXPERIMENT_CONFIG.md](EXPERIMENT_CONFIG.md) §4.3.1 / §5.2
 
 Stage enter/exit in the experiment config ([EXPERIMENT_CONFIG.md](EXPERIMENT_CONFIG.md) §4.11) **maps onto these names**. The stimulus worker emits them from the loaded YAML; do not keep a second, hard-coded marker list in the trial loop.
 

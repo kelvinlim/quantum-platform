@@ -106,7 +106,7 @@ sessions/<participant_id>/<session_id>/     ← local write is source of truth
 ### 4.1 Tauri 2 + React operator UI
 
 - Session arm / stop, participant code entry, calibration wizards, device status.
-- **Guided runbook** driven by the loaded experiment config ([EXPERIMENT_CONFIG.md](EXPERIMENT_CONFIG.md)): current stage, countdown, reminders, constraint badges, checklist gates. Not a hard-coded trial loop.
+- **Guided runbook** driven by the loaded experiment config ([EXPERIMENT_CONFIG.md](EXPERIMENT_CONFIG.md)): current stage, countdown, reminders, constraint badges, checklist gates, and a large **Continue / Next phase** or **End phase** button (`advance` / `end_signal`). Not a hard-coded trial loop.
 - Live previews and QC indicators (dropouts, BLE state, NUC-safe window).
 - Operator checklist surfaces (NUC never during exposure).
 - No direct USB/BLE/SDK calls. Talks to the Rust shell via Tauri IPC.
