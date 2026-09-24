@@ -25,16 +25,24 @@ Primary research contrast (investigator-defined; not yet finalized in this repo)
 - ECG-quality R-peak analysis (Verity is PPG)
 - Replacing PI 450i with an integrated FLIR A50/A70 (optional future path only)
 
-## 3. Viewing geometry (baseline)
+## 3. Viewing geometry (two stations)
 
-For a **70 cm × 90 cm** painting (from prior hardware notes). Subject is **seated** in a comfortable, **fixed / locked chair** (not standing); see [PROTOCOL.md](PROTOCOL.md) §2.4 and §4.1.
+Two marked camera geometries — do **not** cover both phases from one spot. Operator procedure, QR mounts, and figures: [PROTOCOL.md](PROTOCOL.md) §4 and [HARDWARE.md](HARDWARE.md).
 
-- Subject-to-painting ≈ **1.5 m** (~26° × 33° visual angle); chair locked / marked on the floor
+**Station A — seated viewing** (`seated_view`; [lab-layout.png](figures/lab-layout.png), viewing station only):
+
+- Subject **seated** in a comfortable, **fixed / locked chair**; subject-to-painting ≈ **1.5 m** (~26° × 33° visual angle)
 - Seat height adjusted so **eye height ≈ painting center (≈145–150 cm)**
-- RGB camera-to-face ≈ **0.8–1.0 m** (face fills ~30–50% of FOV)
-- RGB pedestal ≈ **95–105 cm**, tilted up ~12–15°
-- Dual-mount RGB + PI 450i on a rigid rail/PETG frame so RGB↔thermal calibration stays stable
+- Dual bar on a tripod/pedestal **between** subject and canvas; camera-to-face ≈ **0.8–1.0 m**; pedestal ≈ **95–105 cm**, tilted up ~12–15°
 - Chin rest not required unless gaze calibration fails
+
+**Station B — close interaction** (`close_interact`; [lab-layout-close-interact.png](figures/lab-layout-close-interact.png)):
+
+- Subject **stands or leans** close to the canvas with hands near/over the painting (last pre-VR capture)
+- Same PI 450i + Blackfly dual bar **behind / above** the painting, peeking over the top, look-down ≈ **30–45°**, camera-to-face ≈ **0.4–0.8 m**
+- Wall plate or easel-back + short rigid riser (no floppy boom). SKU and exact angle **TBD**
+
+Both stations: RGB + PI 450i stay on **one rigid dual bar** with a QR plate; matched clamps stay on the receivers so the bar moves without loosening cameras (preserves RGB↔thermal calibration). Tag events with `seated_view` or `close_interact`.
 
 ## 4. Architecture
 
@@ -90,9 +98,10 @@ Expect **coarse AOIs** (a few degrees / centimeters on canvas), not fine brushst
 
 ### RGB ↔ thermal fusion
 
-- Rigid co-mount; dual-spectrum calibration target (heated/high-emissivity preferred).
-- OpenCV: `calibrateCamera`, `stereoCalibrate` / planar `findHomography` at fixed subject distance.
-- Map RGB landmarks into thermal coordinates; compute ROI mean/std/max temperature.
+- Rigid dual bar; dual-spectrum calibration target (heated/high-emissivity preferred). Do not loosen cameras on the bar when docking Station A ↔ B.
+- OpenCV: `calibrateCamera`, `stereoCalibrate` / planar `findHomography` at fixed subject distance (Station A, ≈0.8–1.0 m).
+- After a clean QR dock, visual RGB–thermal overlap may suffice; full recalibration if the cameras moved relative to each other or the bar was bumped hard ([PROTOCOL.md](PROTOCOL.md) §4.1.3).
+- Map RGB landmarks into thermal coordinates; compute ROI mean/std/max temperature. Drop frames where landmarks fail (close-interaction occlusion).
 
 ## 5. Software stack (preferred)
 
@@ -131,7 +140,8 @@ Markers must include at least:
 - `session_start` / `session_end`
 - `calibration_start` / `calibration_end` (gaze, RGB–thermal)
 - `fixation_onset` / `fixation_offset`
-- `stimulus_onset` / `stimulus_offset` (painting id, condition: quantum|standard)
+- `stimulus_onset` / `stimulus_offset` (painting id, condition: quantum|standard, geometry: seated_view|close_interact)
+- optional `geometry_change` (from/to station; post-move QC path)
 - `isi_onset` / `isi_offset`
 - `nuc_trigger`
 - optional behavioral responses / ratings
@@ -150,6 +160,8 @@ Documented here so they are not lost:
 5. Whether ratings / behavioral responses are collected
 6. AOI definitions per painting
 7. Privacy / consent / identifiable video retention policy
+8. Station B SKU (wall vs easel), exact look-down angle, one movable bar vs spare bar
+9. Close-interaction task / timing and the following VR break (PROTOCOL §13)
 
 ## 8. Safety and ethics (engineering notes)
 

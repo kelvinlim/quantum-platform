@@ -80,7 +80,7 @@ Session-wide fallbacks. A stage may override.
 |-------|--------|
 | `collect` | Modality on/off (see §4.5). Missing stage `collect` inherits this. |
 | `sample_rates` | Hints only (`thermal_hz`, `rgb_hz`). Hardware profiles still win if they cannot meet the hint. |
-| `geometry` | Reference to the PROTOCOL / HARDWARE baseline (or a named geometry profile later). Not a second geometry spec. |
+| `geometry` | Reference to the PROTOCOL / HARDWARE stations. PROTOCOL v0.2 names `seated_view` (Station A) and `close_interact` (Station B). This field is not a second geometry spec; tag events with those names. |
 | `advance` | Default advance policy if a stage omits it. |
 | `end_signal` | Default end-of-phase policy (`auto` unless a stage sets `operator` / `confirm_end`). |
 | `constraints` | Default hard constraints (e.g. `allow_nuc: true` outside exposure). |
