@@ -42,7 +42,7 @@ npm install
 npm run tauri dev
 ```
 
-The Rust host spawns `python3 -m quantum_platform serve` with `PYTHONPATH=<repo>/src` and `PYTHONUNBUFFERED=1`. Override the interpreter with `QUANTUM_PLATFORM_PYTHON`.
+The Rust host spawns `python -m quantum_platform serve` with `PYTHONPATH=<repo>/src` and `PYTHONUNBUFFERED=1`. Interpreter lookup, in order: `QUANTUM_PLATFORM_PYTHON`, a repo-root `.venv` (`Scripts/python.exe` on Windows, `bin/python` on macOS/Linux), then `python3` / `python` on `PATH`.
 
 Frontend-only (no sidecar, no IPC):
 
@@ -83,6 +83,70 @@ Timestamps are **monotonic** (`ts` seconds from session start, `ts_ns` raw `mono
 
 ## IPC
 
-Locked transport: JSON-RPC 2.0, one NDJSON object per line on sidecar stdin/stdout ([INTEGRATIONS.md](INTEGRATIONS.md) §2).
+Locked transport: JSON-RPC 2.0, one NDJSON object per line on sidecar stdin/stdout ([INTEGRATIONS.md](INTEGRATIONS.md) §2). Lines are UTF-8 (including non-ASCII reminder text such as `≈`). The sidecar writes bytes on the binary stdio buffer so a Windows piped child does not hit `OSError: [Errno 22] Invalid argument`.
 
 Phase 1 also implements additive operator methods used by the runbook UI (`session.advance`, `session.end_phase`, `session.checklist_set`, pause/resume/skip/abort) and optional `stage.status` notifications. Those names were left open by EXPERIMENT_CONFIG.md §6; they do not change the locked method list.
+
+## Windows (operator UI + sidecar)
+
+Same dry-run path as above. A repo `.venv` is enough; `QUANTUM_PLATFORM_PYTHON` is optional once that venv exists.
+
+### Toolchain
+
+1. **Python 3.12** (PySpin wheels list 3.10 and 3.12, not 3.11 — [SDK.md](SDK.md)):
+
+   ```bat
+   winget install Python.Python.3.12
+   ```
+
+   From the repo root (use `py -3.12` if `python` is the Microsoft Store stub):
+
+   ```bat
+   py -3.12 -m venv .venv
+   .venv\Scripts\activate
+   pip install -e ".[dev]"
+   ```
+
+2. **Rust** (recent stable; Tauri 2 needs newer than 1.83):
+
+   ```bat
+   winget install Rustlang.Rustup
+   ```
+
+3. **Visual Studio 2022 Build Tools** with the **MSVC v143 C++ x64/x86 build tools (VCTools)** and a Windows SDK. The “Desktop development with C++” workload covers this. The Tauri/Rust Windows toolchain needs `link.exe` from VCTools.
+
+4. **Node.js 20+**:
+
+   ```bat
+   winget install OpenJS.NodeJS.LTS
+   ```
+
+### Tauri / npm
+
+```bat
+cd app
+npm install
+npm run tauri dev
+```
+
+If `esbuild` fails because install scripts are blocked (`Ignored build scripts: esbuild`, `allowScripts`, or a similar pnpm approve-builds prompt), allow `esbuild`’s postinstall and rebuild:
+
+```bat
+npm rebuild esbuild
+```
+
+With pnpm 10+: `pnpm config set ignore-scripts false` or `pnpm approve-builds` and allow `esbuild`, then reinstall.
+
+### Interpreter override
+
+The host prefers `<repo>\.venv\Scripts\python.exe` when `QUANTUM_PLATFORM_PYTHON` is unset. To force another interpreter (cmd / PowerShell):
+
+```bat
+set QUANTUM_PLATFORM_PYTHON=C:\path\to\python.exe
+```
+
+```powershell
+$env:QUANTUM_PLATFORM_PYTHON="C:\path\to\python.exe"
+```
+
+Headless `qp run --config experiments/painting_session_simplified.yaml --mock --auto-press` talks to the console, not the Tauri pipe, and is a useful first check before `npm run tauri dev`.

@@ -28,7 +28,7 @@ pub struct Sidecar {
 
 impl Sidecar {
     pub fn spawn(repo_root: &Path, app: AppHandle) -> AppResult<Self> {
-        let python = find_python()?;
+        let python = find_python(repo_root)?;
         let src = repo_root.join("src");
         let mut cmd = Command::new(&python);
         cmd.args(["-m", "quantum_platform", "serve"])
@@ -182,13 +182,37 @@ pub fn discover_repo_root() -> PathBuf {
     from_manifest
 }
 
-fn find_python() -> AppResult<PathBuf> {
+fn find_python(repo_root: &Path) -> AppResult<PathBuf> {
     if let Ok(path) = std::env::var("QUANTUM_PLATFORM_PYTHON") {
         return Ok(PathBuf::from(path));
     }
+    for candidate in venv_python_candidates(repo_root) {
+        if candidate.is_file() {
+            return Ok(candidate);
+        }
+    }
     which::which("python3")
         .or_else(|_| which::which("python"))
-        .map_err(|_| AppError::msg("python3 not found; set QUANTUM_PLATFORM_PYTHON"))
+        .map_err(|_| {
+            AppError::msg(
+                "python3 not found; create a repo .venv or set QUANTUM_PLATFORM_PYTHON",
+            )
+        })
+}
+
+fn venv_python_candidates(repo_root: &Path) -> Vec<PathBuf> {
+    let venv = repo_root.join(".venv");
+    if cfg!(windows) {
+        vec![
+            venv.join("Scripts").join("python.exe"),
+            venv.join("Scripts").join("python3.exe"),
+        ]
+    } else {
+        vec![
+            venv.join("bin").join("python"),
+            venv.join("bin").join("python3"),
+        ]
+    }
 }
 
 fn pythonpath_with(src: &Path) -> String {
@@ -204,5 +228,22 @@ fn path_sep() -> &'static str {
         ";"
     } else {
         ":"
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn venv_candidates_match_platform_layout() {
+        let root = PathBuf::from("/repo");
+        let candidates = venv_python_candidates(&root);
+        let rendered: Vec<String> = candidates.iter().map(|p| p.to_string_lossy().replace('\\', "/")).collect();
+        if cfg!(windows) {
+            assert!(rendered.iter().any(|p| p.ends_with(".venv/Scripts/python.exe")));
+        } else {
+            assert!(rendered.iter().any(|p| p.ends_with(".venv/bin/python")));
+        }
     }
 }

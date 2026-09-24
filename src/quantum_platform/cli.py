@@ -15,7 +15,7 @@ from quantum_platform import __version__
 from quantum_platform.clock import FakeClock, SystemClock
 from quantum_platform.config import ConfigError, load_experiment
 from quantum_platform.doctor import run_doctor
-from quantum_platform.rpc import JsonRpcServer
+from quantum_platform.rpc import JsonRpcServer, configure_stdio
 from quantum_platform.sidecar import SidecarApp, auto_press_until_done
 
 
@@ -129,11 +129,7 @@ def main(argv: list[str] | None = None) -> int:
 
 
 def cmd_serve(repo_root: Path, experiments_dir: Path) -> int:
-    if hasattr(sys.stdout, "reconfigure"):
-        try:
-            sys.stdout.reconfigure(line_buffering=True)
-        except Exception:  # noqa: BLE001
-            pass
+    configure_stdio()
     app = SidecarApp(
         experiments_dir=experiments_dir,
         repo_root=repo_root,
