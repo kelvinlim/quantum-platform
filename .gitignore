@@ -1,0 +1,26 @@
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+dist/
+build/
+
+# Node / Vite
+node_modules/
+app/dist/
+app/node_modules/
+
+# Rust / Tauri
+app/src-tauri/target/
+app/src-tauri/gen/
+
+# Local session output (keep the tree out of git)
+sessions/
+*.log
+.DS_Store
+.cache/

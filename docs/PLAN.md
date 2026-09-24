@@ -2,7 +2,7 @@
 
 Phased roadmap. Docs-first repo; software follows.
 
-## Phase 0 — Docs and decisions (current)
+## Phase 0 — Docs and decisions
 
 - [x] Capture hardware notes from prior Gemini design discussion
 - [x] Lock preferred HR: **Polar Verity Sense** (arm)
@@ -25,24 +25,24 @@ Phased roadmap. Docs-first repo; software follows.
 
 **Exit:** Design + plan merged; shopping list agreed; protocol outline drafted (WIP). Investigator decisions in `docs/PROTOCOL.md` §13 still block a confirmatory run.
 
-## Phase 1 — Repo scaffolding (MVP skeleton)
+## Phase 1 — Repo scaffolding (MVP skeleton) (software landed)
 
 **Assume Option A** ([ARCHITECTURE.md](ARCHITECTURE.md)): Tauri 2 + React operator UI, Rust session orchestrator, Python capture sidecar. Do not scaffold a Python-only GUI or Electron host.
 
 **Assume locked integrations** ([INTEGRATIONS.md](INTEGRATIONS.md)): JSON-RPC 2.0 NDJSON over sidecar stdio; REDCap field dictionary and Box path taxonomy as specified there. Release packaging (**PyInstaller onedir** as Tauri `externalBin`) can wait until a hardware worker lands; Phase 1 runs the sidecar from a venv (`python -m quantum_platform` / `qp`).
 
-- Tauri 2 + React operator shell (session start/stop, participant code, device status)
-- Rust orchestrator stubs: sidecar spawn/lifecycle, **JSON-RPC 2.0 NDJSON over stdio**, session directory, command/event relay
-- Python sidecar package (`src/quantum_platform/` or equivalent); run as `python -m quantum_platform` or `qp`
-- Config schemas for hardware profiles, session metadata, and `redcap.*` / `box.*` / `sidecar.*` keys ([INTEGRATIONS.md](INTEGRATIONS.md) §6)
-- **Experiment configurator** ([EXPERIMENT_CONFIG.md](EXPERIMENT_CONFIG.md)): `schema_version: 1` YAML schema + loader/validator; operator **stage UI** (stage list, banner, countdown, reminders, constraint badges, checklist gates, large **Continue / Next phase** and **End phase** buttons per `advance` / `end_signal`); sidecar `stimulus` worker consumes the **same YAML**. Button presses log `operator_advance` / `operator_end_phase`. Dry-run fake streams still follow the configured stages.
-- LSL stream name conventions + `events.jsonl` writer
-- Stub workers in the sidecar: `thermal`, `rgb`, `verity`, `gaze`, `stimulus` (simulate clocks if hardware absent)
-- Sidecar CLI still useful for lab bring-up: `qp session start|stop`, `qp calibrate gaze`, `qp doctor` (device presence checks)
-- Unit tests for timestamp pairing and event log format
-- REDCap/Box network clients are not required to function in Phase 1; when stubs exist, use the INTEGRATIONS.md contracts
+- [x] Tauri 2 + React operator shell (session start/stop, participant code, device status) — `app/`
+- [x] Rust orchestrator stubs: sidecar spawn/lifecycle, **JSON-RPC 2.0 NDJSON over stdio**, session directory, command/event relay
+- [x] Python sidecar package (`src/quantum_platform/`); run as `python -m quantum_platform` or `qp`
+- [x] Config schemas for hardware profiles, session metadata, and `redcap.*` / `box.*` / `sidecar.*` keys — `config/default.yaml`
+- [x] **Experiment configurator** ([EXPERIMENT_CONFIG.md](EXPERIMENT_CONFIG.md)): `schema_version: 1` YAML schema + loader/validator; operator **stage UI**; sidecar runner consumes the **same YAML**. Button presses log `operator_advance` / `operator_end_phase`. Example: `experiments/painting_session_simplified.yaml`
+- [x] LSL stream name conventions (recorded in `meta.yaml`) + `events.jsonl` writer
+- [x] Stub / mock workers: `thermal`, `rgb`, `verity`, `gaze`, plus a config-driven stage runner (stimulus). Vendor SDK backends raise `NotImplementedError` until Phase 2
+- [x] Sidecar CLI: `qp run --auto-press`, `qp session start`, `qp calibrate gaze`, `qp doctor`
+- [x] Unit tests for config validation, stage transitions, JSON-RPC framing, timestamp pairing, and session directory output
+- [x] REDCap/Box **stubs** only (INTEGRATIONS.md contracts; no network)
 
-**Exit:** Dry-run session from the Tauri UI (or sidecar CLI) follows the experiment config stages and produces aligned fake streams + markers on disk.
+**Exit:** Dry-run session from the Tauri UI (or `qp run --mock --auto-press`) follows the experiment config stages and produces aligned fake streams + markers on disk. See [DEV.md](DEV.md). Real capture, REDCap/Box I/O, and PyInstaller `externalBin` remain later phases.
 
 ## Phase 2 — Hardware bring-up
 

@@ -1,0 +1,15 @@
+schema_version: 1
+id: mini_operator
+name: Mini operator
+stages:
+  - id: wait
+    label: Wait
+    kind: operator_wait
+    duration_s: null
+    advance: operator
+    collect: { events: true }
+    checklist:
+      - id: ready
+        text: Ready
+    events:
+      enter: { name: session_note, payload: { note: wait } }

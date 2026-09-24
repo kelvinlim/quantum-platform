@@ -3,7 +3,7 @@
 | Field | Value |
 |-------|--------|
 | Document | `docs/EXPERIMENT_CONFIG.md` |
-| Status | **Design sketch** (`schema_version: 1`) |
+| Status | **Design sketch** (`schema_version: 1`); Phase 1 implements the loader, validator, and runner |
 | Date | 2026-09-23 |
 | Related | [DESIGN.md](DESIGN.md), [PLAN.md](PLAN.md), [PROTOCOL.md](PROTOCOL.md), [ARCHITECTURE.md](ARCHITECTURE.md), [INTEGRATIONS.md](INTEGRATIONS.md) |
 
