@@ -1,0 +1,38 @@
+# App-facing config sketch (INTEGRATIONS.md §6).
+# Secrets stay in the environment or OS secret store — do not commit tokens.
+
+sidecar:
+  command: python
+  args: ["-m", "quantum_platform"]
+  ipc: jsonrpc-ndjson-stdio
+  # optional later (debug without Tauri):
+  # tcp_host: 127.0.0.1
+  # tcp_port: 8700
+
+redcap:
+  base_url: https://redcap.example.edu/api/
+  api_token: ${REDCAP_API_TOKEN}
+  project_id: 12345
+  # field-name overrides (defaults = INTEGRATIONS.md §4)
+  fields:
+    record_id: record_id
+    session_id: session_id
+
+box:
+  root_folder_id: ""
+  # or: root_folder_path: /QuantumPlatform
+  # auth: oauth | jwt — not locked; Box connector is a Phase 1 stub
+
+experiments:
+  dir: experiments/
+  default_id: painting_session_simplified
+
+hardware:
+  thermal:
+    backend: otc          # Phase 2; mock in Phase 1 dry-run
+  rgb:
+    backend: pyspin
+  verity:
+    backend: bleak
+  gaze:
+    backend: mediapipe

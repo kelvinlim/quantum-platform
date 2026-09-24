@@ -1,0 +1,14 @@
+schema_version: 1
+id: mini_end_signal
+name: Mini end signal
+stages:
+  - id: rest
+    label: Rest
+    kind: rest
+    duration_s: 5
+    advance: auto
+    end_signal: operator
+    collect: { events: true }
+    events:
+      enter: { name: rest_onset }
+      exit: { name: rest_offset }

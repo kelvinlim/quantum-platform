@@ -1,0 +1,11 @@
+schema_version: 1
+id: mini_confirm_end
+name: Mini confirm_end alias
+stages:
+  - id: rest
+    label: Rest
+    kind: rest
+    duration_s: 3
+    advance: auto
+    confirm_end: true
+    collect: { events: true }

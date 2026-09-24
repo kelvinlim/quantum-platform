@@ -1,0 +1,238 @@
+schema_version: 1
+id: painting_session_simplified
+name: Simplified painting session
+protocol_version: "0.1"
+description: >
+  Setup checklist (Continue / Next), gaze calibration, baseline rest
+  with End-phase confirmation, hang-painting wait (button), then a
+  small fixation → exposure → ISI block. Not a confirmatory protocol.
+
+defaults:
+  collect:
+    thermal: true
+    rgb: true
+    verity: true
+    gaze: true
+    events: true
+  sample_rates:
+    thermal_hz: 80
+    rgb_hz: 60
+  geometry: protocol_baseline
+  constraints:
+    allow_nuc: true
+    allow_talk: true
+    allow_operator_in_fov: true
+
+catalog:
+  paintings:
+    - { painting_id: Q001, condition: quantum }
+    - { painting_id: S001, condition: standard }
+
+# Randomization / counterbalance: PROTOCOL §7 / §13 — placeholder only.
+randomization:
+  scheme: protocol_tbd
+  max_consecutive_same_condition: 2
+  first_condition_counterbalance: participant_parity
+
+stages:
+  - id: setup
+    label: "Phase 1 — Setup"
+    kind: checklist
+    duration_s: null
+    advance: operator
+    collect:
+      thermal: false
+      rgb: false
+      verity: false
+      gaze: false
+      events: true
+    reminders:
+      - when: enter
+        text: "Complete setup, then press Continue / Next phase."
+        tone: info
+    checklist:
+      - id: chair_locked
+        text: Chair locked on floor marks (~1.5 m)
+      - id: eye_height
+        text: Eye height ≈ painting center (145–150 cm)
+      - id: verity_green
+        text: Verity on designated upper arm; LED / live HR green
+      - id: painting_ready
+        text: First painting ready; cover on for fixation
+    events:
+      enter: { name: session_note, payload: { note: setup_begin } }
+
+  - id: gaze_cal
+    label: "Gaze calibration"
+    kind: calibration
+    duration_s: null
+    advance: operator
+    collect:
+      thermal: false
+      rgb: true
+      verity: true
+      gaze: true
+      events: true
+    reminders:
+      - when: enter
+        text: "5–9 look-at marks. Cue each point; do not rush."
+    checklist:
+      - id: gaze_qc
+        text: Look-at QC acceptable (or chin rest added and redone)
+    events:
+      enter: { name: calibration_start, payload: { kind: gaze } }
+      exit: { name: calibration_end, payload: { kind: gaze } }
+
+  - id: baseline
+    label: "Phase 1 — Baseline"
+    kind: rest
+    duration_s: 60
+    advance: auto
+    end_signal: operator          # timer is guidance/elapsed; must click End phase
+    # confirm_end: true           # alias for end_signal: operator
+    collect:
+      thermal: true
+      rgb: true
+      verity: true
+      gaze: true
+      events: true
+    constraints:
+      allow_nuc: true
+      allow_talk: false
+      allow_operator_in_fov: false
+    reminders:
+      - when: enter
+        text: "Baseline rest. Do not talk. Stay out of FOV."
+        tone: warn
+      - when: countdown_at_s
+        at_s: 10
+        text: "10 s left — then press End phase (do not leave on the timer alone)."
+    events:
+      enter: { name: rest_onset, payload: { kind: baseline } }
+      exit: { name: rest_offset, payload: { kind: baseline } }
+
+  - id: hang_painting
+    label: "Hang next painting"
+    kind: operator_wait
+    duration_s: null
+    advance: operator            # must press Continue / Next phase
+    collect:
+      thermal: true
+      rgb: true
+      verity: true
+      gaze: false
+      events: true
+    constraints:
+      allow_nuc: true
+      allow_talk: true
+      allow_operator_in_fov: true
+    reminders:
+      - when: enter
+        text: "Hang the first experimental painting. Cover on. Then press Continue / Next phase."
+    checklist:
+      - id: painting_hung
+        text: Painting hung; cover on for fixation
+    events:
+      enter: { name: session_note, payload: { note: hang_painting } }
+
+  - id: experimental_block
+    label: "Experimental trials"
+    repeat:
+      over: catalog.paintings
+      shuffle: protocol_tbd
+    stages:
+      - id: fixation
+        label: "Fixation"
+        kind: timed
+        duration_s: 2.5
+        advance: auto
+        constraints:
+          allow_nuc: false
+          allow_talk: false
+          allow_operator_in_fov: false
+        reminders:
+          - when: enter
+            text: "Fixation. Cover on. Do not talk."
+        events:
+          enter: { name: fixation_onset }
+          exit: { name: fixation_offset }
+
+      - id: exposure
+        label: "Exposure"
+        kind: stimulus
+        duration_s: 25
+        advance: auto
+        stimulus:
+          painting_id: ${item.painting_id}
+          condition: ${item.condition}
+          presentation: physical
+          cover: off
+        constraints:
+          allow_nuc: false
+          allow_talk: false
+          allow_operator_in_fov: false
+        reminders:
+          - when: enter
+            text: "Start painting. NO NUC. Do not talk. Stay out of FOV."
+            tone: critical
+          - when: countdown_at_s
+            at_s: 5
+            text: "5 s — prepare cover."
+            tone: warn
+        events:
+          enter:
+            name: stimulus_onset
+            payload:
+              painting_id: ${item.painting_id}
+              condition: ${item.condition}
+          exit:
+            name: stimulus_offset
+            payload:
+              painting_id: ${item.painting_id}
+              condition: ${item.condition}
+
+      - id: isi
+        label: "ISI"
+        kind: timed
+        duration_s: 8
+        advance: auto
+        stimulus:
+          cover: on
+        constraints:
+          allow_nuc: true
+          allow_talk: false
+          allow_operator_in_fov: false
+        reminders:
+          - when: enter
+            text: "ISI. Cover on. Do NUC now (if due)."
+            tone: warn
+          - when: enter
+            text: "If ratings are enabled this session: enter rating in REDCap (not in this UI)."
+            tone: info
+        events:
+          enter: { name: isi_onset }
+          exit: { name: isi_offset }
+
+  - id: closeout
+    label: "Session end"
+    kind: checklist
+    duration_s: null
+    advance: operator
+    collect:
+      thermal: false
+      rgb: false
+      verity: false
+      gaze: false
+      events: true
+    reminders:
+      - when: enter
+        text: "Capture should be stopped. Queue Box upload after local write. Press Continue / Next when the checklist is done."
+    checklist:
+      - id: events_paired
+        text: events.jsonl has paired onset/offset for every exposure
+      - id: no_nuc_in_exposure
+        text: No nuc_trigger inside any stimulus window
+      - id: upload_reminder
+        text: Local write complete — start / confirm Box upload when network is available
+    events:
+      enter: { name: session_note, payload: { note: closeout_begin } }

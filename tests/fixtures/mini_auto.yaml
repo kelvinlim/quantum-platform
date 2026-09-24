@@ -1,0 +1,22 @@
+schema_version: 1
+id: mini_auto
+name: Mini auto
+stages:
+  - id: a
+    label: A
+    kind: timed
+    duration_s: 1
+    advance: auto
+    collect: { events: true }
+    events:
+      enter: { name: fixation_onset }
+      exit: { name: fixation_offset }
+  - id: b
+    label: B
+    kind: timed
+    duration_s: 1
+    advance: auto
+    collect: { events: true }
+    events:
+      enter: { name: isi_onset }
+      exit: { name: isi_offset }

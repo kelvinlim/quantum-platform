@@ -1,0 +1,13 @@
+schema_version: 1
+id: mini_either
+name: Mini either
+stages:
+  - id: either
+    label: Either
+    kind: timed
+    duration_s: 2
+    advance: either
+    collect: { events: true }
+    events:
+      enter: { name: fixation_onset }
+      exit: { name: fixation_offset }

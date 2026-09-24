@@ -9,7 +9,7 @@
 
 This document is the app-facing contract for sidecar IPC, Python packaging, REDCap registry fields, and Box session paths. It locks the four follow-ups in [ARCHITECTURE.md](ARCHITECTURE.md) §8. It does **not** reopen Option A (Tauri 2 + React + Rust + Python sidecar). Experiment stage schema lives in [EXPERIMENT_CONFIG.md](EXPERIMENT_CONFIG.md) and does **not** change the locks below.
 
-No software is implemented here. Phase 1 scaffolding in [PLAN.md](PLAN.md) should assume these contracts.
+Phase 1 software implements these contracts (sidecar + stubs). This file remains the lock; additive operator methods are listed in §2.
 
 ---
 
@@ -65,6 +65,23 @@ The same JSON-RPC over `127.0.0.1` TCP, for debugging without Tauri. Not require
 | `event.emit` | notification | Protocol / stimulus / marker events (mirrors `events.jsonl` lines) |
 | `device.status` | notification | Device connect / disconnect, NUC state, BLE, dropouts |
 | `error` | notification | Recoverable or fatal sidecar errors |
+
+### Phase 1 additive methods (not a lock change)
+
+EXPERIMENT_CONFIG.md §6 left operator button RPC names open. The Phase 1 sidecar implements these **additive** requests so the runbook UI can drive checklists and Continue / End phase. The locked minimum table above is unchanged.
+
+| Method | Kind | Purpose |
+|--------|------|---------|
+| `session.advance` | request | Operator **Continue / Next phase** (`operator_advance`) |
+| `session.end_phase` | request | Operator **End phase** (`operator_end_phase`) |
+| `session.checklist_set` | request | Toggle a checklist item (`item_id`, `checked`) |
+| `session.pause` / `session.resume` | request | Freeze / unfreeze the stage timer |
+| `session.skip` | request | Leave the stage; `reason` required |
+| `session.abort` | request | `session.stop` with abort note |
+
+Optional notifications used by the operator UI (also additive): `stage.status`, `stage.reminder`. A later revision may fold these into the minimum table; they are not required to speak the locked transport.
+
+`session.start` accepts additive params `mock` (default `true` in Phase 1) and `sessions_root`.
 
 ### Message sketch
 
