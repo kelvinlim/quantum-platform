@@ -9,6 +9,7 @@ Phased roadmap. Docs-first repo; software follows.
 - [x] Recommend RGB: **Blackfly S BFS-U3-23S3C-C** (~$421 body)
 - [x] Budget gaze approach: face RGB + MediaPipe/OpenFace + painting-plane intersection
 - [x] Protocol outline drafted (`docs/PROTOCOL.md`) — **WIP**; trial flow, provisional timing, measures, event markers, operator checklist
+- [x] Dual camera stations documented (PROTOCOL v0.2): Station A `seated_view` ([lab-layout.png](docs/figures/lab-layout.png)); Station B `close_interact` ([lab-layout-close-interact.png](docs/figures/lab-layout-close-interact.png)); QR move of one rigid dual bar
 - [x] Lock desktop shell: **Option A** — Tauri 2 + React + Rust shell + Python capture sidecar ([ARCHITECTURE.md](ARCHITECTURE.md), Sep 2026). Alternatives B–E documented, not chosen.
 - [x] Lock architecture follow-ups: JSON-RPC 2.0 stdio, PyInstaller onedir (release), REDCap/Box contracts ([INTEGRATIONS.md](INTEGRATIONS.md), Sep 2026)
 - [x] Experiment configurator design: declarative stages, collect flags, operator reminders ([EXPERIMENT_CONFIG.md](EXPERIMENT_CONFIG.md), Sep 2026)
@@ -20,6 +21,7 @@ Phased roadmap. Docs-first repo; software follows.
   - Ratings / behavioral responses (whether, which, when)
   - Per-painting AOIs; HR/thermal baseline windows
   - Sample size, eligibility, confirmatory vs exploratory hypotheses
+  - Station B SKU / look-down angle; close-interaction and VR timing
 - [ ] Order RGB camera + C-mount lens; confirm Verity Sense kit
 - [ ] Confirm IRB / data-retention constraints for face/thermal video
 

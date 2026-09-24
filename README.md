@@ -21,7 +21,7 @@ Phase 1 software is a **dry-run skeleton**: Tauri 2 + React operator UI, Rust ho
 - [Design](docs/DESIGN.md) — modalities, sync, data model
 - [Plan](docs/PLAN.md) — phased implementation roadmap
 - [Hardware](docs/HARDWARE.md) — recommended and owned devices
-- [Protocol](docs/PROTOCOL.md) — investigator-facing study protocol (Draft / WIP); [lab-layout figure](docs/figures/lab-layout.png) (provisional geometry)
+- [Protocol](docs/PROTOCOL.md) — investigator-facing study protocol (Draft / WIP); [Station A seated layout](docs/figures/lab-layout.png); [Station B close-interaction layout](docs/figures/lab-layout-close-interact.png)
 
 ## Status
 
