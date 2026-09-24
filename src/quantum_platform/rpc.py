@@ -4,16 +4,24 @@ Locked in INTEGRATIONS.md §2. One object per line on stdin/stdout.
 A dedicated stderr/event stream is allowed later; Phase 1 uses one
 stdout stream and discriminates request / response / notification
 per JSON-RPC 2.0.
+
+On Windows, the C runtime opens inherited stdio in text mode. Writing UTF-8
+NDJSON (``ensure_ascii=False``) through ``TextIOWrapper`` to an anonymous
+pipe — the Rust host's ``Stdio::piped()`` — raises
+``OSError: [Errno 22] Invalid argument``. The writer therefore emits UTF-8
+bytes on the binary buffer; ``configure_stdio`` also switches the fds to
+``O_BINARY`` on Windows.
 """
 
 from __future__ import annotations
 
 import json
+import os
 import sys
 import threading
 from collections.abc import Callable, Iterator, Mapping
 from dataclasses import dataclass
-from typing import Any, TextIO
+from typing import Any, BinaryIO, TextIO
 
 JSONRPC_VERSION = "2.0"
 
@@ -40,8 +48,81 @@ def parse_message(line: str) -> dict[str, Any]:
     return obj
 
 
+def _binary_buffer(stream: Any) -> BinaryIO | None:
+    buf = getattr(stream, "buffer", None)
+    if buf is None:
+        return None
+    write = getattr(buf, "write", None)
+    if write is None:
+        return None
+    return buf
+
+
+def write_ndjson_line(stream: Any, line: str) -> None:
+    """Write one NDJSON line as UTF-8 bytes when a binary buffer is available.
+
+    ``StringIO`` (unit tests) has no ``.buffer`` and keeps the text path.
+    Real stdio — including Windows pipes — goes through the binary buffer so
+    the CRT never sees a text-mode write of UTF-8.
+    """
+    payload = line.encode("utf-8")
+    buf = _binary_buffer(stream)
+    if buf is not None:
+        buf.write(payload)
+        buf.flush()
+        return
+    stream.write(line)
+    stream.flush()
+
+
+def read_ndjson_line(stream: Any) -> str | None:
+    """Read one raw NDJSON line (including the trailing newline), or ``None`` at EOF."""
+    buf = _binary_buffer(stream)
+    if buf is not None:
+        raw = buf.readline()
+        if not raw:
+            return None
+        if isinstance(raw, bytes):
+            return raw.decode("utf-8")
+        return raw
+    raw = stream.readline()
+    if not raw:
+        return None
+    return raw
+
+
+def configure_stdio(stdin: Any | None = None, stdout: Any | None = None) -> tuple[Any, Any]:
+    """Put inherited stdio in binary mode so UTF-8 NDJSON can cross a Windows pipe.
+
+    Safe to call on macOS/Linux (no-op besides returning the streams). Safe to
+    call on objects without ``fileno`` (tests).
+    """
+    stdin = sys.stdin if stdin is None else stdin
+    stdout = sys.stdout if stdout is None else stdout
+    if sys.platform == "win32":
+        _set_binary_mode(stdin)
+        _set_binary_mode(stdout)
+    return stdin, stdout
+
+
+def _set_binary_mode(stream: Any) -> None:
+    try:
+        fd = stream.fileno()
+    except (AttributeError, OSError, ValueError):
+        return
+    try:
+        import msvcrt
+
+        msvcrt.setmode(fd, os.O_BINARY)
+    except (ImportError, OSError, ValueError):
+        return
+
+
 def iter_ndjson(stream: TextIO) -> Iterator[dict[str, Any]]:
-    for raw in stream:
+    while True:
+        raw = read_ndjson_line(stream)
+        if raw is None:
+            break
         line = raw.strip()
         if not line:
             continue
@@ -104,14 +185,13 @@ class RpcError(Exception):
 class StdioWriter:
     """Thread-safe NDJSON writer for sidecar stdout."""
 
-    stream: TextIO
+    stream: Any
     lock: threading.Lock
 
     def write(self, obj: Mapping[str, Any]) -> None:
         line = encode_message(obj)
         with self.lock:
-            self.stream.write(line)
-            self.stream.flush()
+            write_ndjson_line(self.stream, line)
 
 
 class JsonRpcServer:
@@ -129,15 +209,21 @@ class JsonRpcServer:
         stdout: TextIO | None = None,
     ) -> None:
         self.handlers = dict(handlers)
+        using_real_stdio = stdin is None and stdout is None
         self.stdin = stdin if stdin is not None else sys.stdin
         self.stdout = stdout if stdout is not None else sys.stdout
+        if using_real_stdio:
+            configure_stdio(self.stdin, self.stdout)
         self.writer = StdioWriter(self.stdout, threading.Lock())
 
     def notify(self, method: str, params: Any | None = None) -> None:
         self.writer.write(notification(method, params))
 
     def serve_forever(self) -> None:
-        for raw in self.stdin:
+        while True:
+            raw = read_ndjson_line(self.stdin)
+            if raw is None:
+                break
             line = raw.strip()
             if not line:
                 continue
